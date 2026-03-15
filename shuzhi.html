@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>15x15 数织解题器 (批量输入版)</title>
+    <style>
+        :root {
+            --cell-size: 32px;
+            --bg-color: #f4f7f6;
+            --grid-line-normal: #bdc3c7;
+            --grid-line-thick: #2c3e50;
+            --thick-border-width: 3px;
+            --filled-color: #2c3e50;
+            --cross-color: #e74c3c;
+            --unknown-color: #ffffff;
+            --hint-bg: #ecf0f1;
+            --input-focus: #3498db;
+            --primary-btn: #3498db;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            user-select: none;
+        }
+
+        h1 { margin-bottom: 10px; color: #2c3e50; }
+        p { margin-bottom: 20px; color: #7f8c8d; max-width: 600px; text-align: center; line-height: 1.6; }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.2s;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-solve { background-color: #27ae60; }
+        .btn-solve:hover { background-color: #219150; transform: translateY(-1px); }
+        
+        .btn-bulk { background-color: var(--primary-btn); }
+        .btn-bulk:hover { background-color: #2980b9; transform: translateY(-1px); }
+
+        .btn-clear { background-color: #e74c3c; }
+        .btn-clear:hover { background-color: #c0392b; transform: translateY(-1px); }
+        
+        .btn-reset { background-color: #95a5a6; }
+        .btn-reset:hover { background-color: #7f8c8d; transform: translateY(-1px); }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: 100px repeat(15, var(--cell-size));
+            grid-template-rows: 100px repeat(15, var(--cell-size));
+            gap: 1px;
+            background-color: var(--grid-line-normal);
+            border: 2px solid #333;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .cell {
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .hint-input-col, .hint-input-row {
+            background-color: var(--hint-bg);
+            padding: 4px;
+            overflow: hidden;
+            color: #555;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: background 0.2s;
+            display: flex;
+            z-index: 2;
+            box-sizing: border-box;
+        }
+
+        .hint-input-col:hover, .hint-input-row:hover {
+            background-color: #cbd5e1;
+            outline: 2px solid var(--input-focus);
+            outline-offset: -2px;
+        }
+
+        .hint-input-col.active, .hint-input-row.active {
+            background-color: #aed6f1;
+            outline: 2px solid var(--input-focus);
+            outline-offset: -2px;
+            z-index: 10;
+        }
+
+        .hint-input-col {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            line-height: 1.2;
+            text-align: center;
+        }
+        
+        .hint-input-row {
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            white-space: nowrap;
+            padding-right: 8px;
+        }
+
+        .result-cell {
+            background-color: var(--unknown-color);
+            cursor: default;
+            box-sizing: border-box;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .border-right-thick {
+            border-right: var(--thick-border-width) solid var(--grid-line-thick) !important;
+            z-index: 2; 
+        }
+
+        .border-bottom-thick {
+            border-bottom: var(--thick-border-width) solid var(--grid-line-thick) !important;
+            z-index: 2;
+        }
+
+        .result-cell.filled { background-color: var(--filled-color); }
+        .result-cell.cross::after {
+            content: '×';
+            color: var(--cross-color);
+            font-weight: bold;
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        /* 模态框通用样式 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            min-width: 400px;
+            max-width: 90%;
+        }
+
+        .modal h3 { margin-top: 0; color: #2c3e50; }
+        .modal p { font-size: 14px; color: #7f8c8d; margin: 5px 0 15px 0; text-align: left; }
+        .modal-code {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 15px;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        .modal textarea {
+            font-size: 14px;
+            padding: 10px;
+            width: 90%;
+            height: 150px;
+            margin-bottom: 20px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            resize: vertical;
+            font-family: monospace;
+            outline: none;
+        }
+        .modal textarea:focus { border-color: var(--input-focus); }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .status-msg {
+            margin-top: 15px;
+            font-weight: bold;
+            height: 24px;
+            font-size: 16px;
+        }
+        .status-success { color: #27ae60; }
+        .status-error { color: #e74c3c; }
+        .status-pending { color: #f39c12; }
+
+    </style>
+</head>
+<body>
+
+    <h1>15x15 数织解题器</h1>
+    <p>
+        💡 <b>偷懒秘籍：</b> 点击 <button class="btn-bulk" style="display:inline-flex; padding: 2px 8px; font-size: 14px;" onclick="openBulkModal()">📋 批量导入</button> 直接粘贴题目文本！<br>
+        支持格式：<code>行: 3 5, 2 2...</code> 和 <code>列: 1 1, 5...</code>
+    </p>
+
+    <div class="controls">
+        <button class="btn-bulk" onclick="openBulkModal()">📋 批量导入/导出</button>
+        <button class="btn-solve" onclick="solvePuzzle()">🚀 开始解题</button>
+        <button class="btn-reset" onclick="resetBoard()">🔄 重置结果</button>
+        <button class="btn-clear" onclick="clearHints()">🗑️ 清空线索</button>
+    </div>
+
+    <div id="status" class="status-msg"></div>
+
+    <div class="game-board" id="board">
+        <div class="cell" style="background:#bdc3c7; cursor:default; z-index:5;"></div>
+    </div>
+
+    <!-- 单个输入模态框 -->
+    <div class="modal-overlay" id="inputModal">
+        <div class="modal">
+            <h3 id="modalTitle">输入线索</h3>
+            <p>用空格分隔数字 (例: 3 5)，按回车自动跳下一个</p>
+            <input type="text" id="hintInput" placeholder="例如: 3 5" style="font-size: 18px; padding: 10px; width: 80%; margin-bottom: 20px; border: 2px solid #ccc; border-radius: 6px; text-align: center;">
+            <div class="modal-buttons">
+                <button class="btn-solve" onclick="confirmHint()">确定 (Enter)</button>
+                <button class="btn-reset" onclick="closeModal()">取消</button>
+                <button class="btn-clear" onclick="clearCurrentHint()">清空</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量导入模态框 -->
+    <div class="modal-overlay" id="bulkModal">
+        <div class="modal">
+            <h3>📋 批量导入/导出线索</h3>
+            <p>可以直接从网上复制题目，或手动编辑下方文本。格式如下：</p>
+            <div class="modal-code">行: 3 5, 2 2, 10, 1 1, ... (15组)
+列: 1 1, 5, 3 3, ... (15组)</div>
+            <textarea id="bulkInput" placeholder="在此粘贴或编辑数据..."></textarea>
+            <div class="modal-buttons">
+                <button class="btn-solve" onclick="confirmBulkImport()">✅ 导入并关闭</button>
+                <button class="btn-reset" onclick="exportToText()">📤 先导出当前数据</button>
+                <button class="btn-clear" onclick="closeBulkModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const SIZE = 15;
+    let rowHints = Array(SIZE).fill(null).map(() => []);
+    let colHints = Array(SIZE).fill(null).map(() => []);
+    let gridState = Array(SIZE).fill(null).map(() => Array(SIZE).fill(0));
+    
+    let currentEditing = null; 
+    let nextFocus = null; // 用于存储下一个要聚焦的单元格
+
+    const boardEl = document.getElementById('board');
+    const inputModalEl = document.getElementById('inputModal');
+    const bulkModalEl = document.getElementById('bulkModal');
+    const hintInputEl = document.getElementById('hintInput');
+    const bulkInputEl = document.getElementById('bulkInput');
+    const modalTitleEl = document.getElementById('modalTitle');
+    const statusEl = document.getElementById('status');
+
+    function initBoard() {
+        boardEl.innerHTML = '<div class="cell" style="background:#bdc3c7; cursor:default; z-index:5;"></div>';
+
+        for (let i = 0; i < SIZE; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'hint-input-col';
+            cell.id = `col-hint-${i}`;
+            cell.onclick = () => openHintModal('col', i);
+            updateHintDisplay('col', i, []); 
+            boardEl.appendChild(cell);
+        }
+
+        for (let r = 0; r < SIZE; r++) {
+            const rowHintCell = document.createElement('div');
+            rowHintCell.className = 'hint-input-row';
+            rowHintCell.id = `row-hint-${r}`;
+            rowHintCell.onclick = () => openHintModal('row', r);
+            updateHintDisplay('row', r, []); 
+            boardEl.appendChild(rowHintCell);
+
+            for (let c = 0; c < SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'result-cell';
+                cell.id = `cell-${r}-${c}`;
+                if (c === 4 || c === 9) cell.classList.add('border-right-thick');
+                if (r === 4 || r === 9) cell.classList.add('border-bottom-thick');
+                boardEl.appendChild(cell);
+            }
+        }
+    }
+
+    // --- 单个输入逻辑 ---
+    function openHintModal(type, index) {
+        currentEditing = { type, index };
+        const hints = type === 'row' ? rowHints[index] : colHints[index];
+        const hintStr = hints.length > 0 ? hints.join(' ') : '';
+        
+        const label = type === 'row' ? `第 ${index + 1} 行` : `第 ${index + 1} 列`;
+        modalTitleEl.textContent = `输入 ${label} 的线索`;
+        hintInputEl.value = hintStr;
+        
+        document.querySelectorAll('.hint-input-col, .hint-input-row').forEach(el => el.classList.remove('active'));
+        const activeEl = document.getElementById(`${type}-hint-${index}`);
+        if(activeEl) activeEl.classList.add('active');
+
+        inputModalEl.style.display = 'flex';
+        hintInputEl.focus();
+        hintInputEl.select();
+        
+        // 预设下一个焦点
+        if (type === 'row') {
+            nextFocus = (index < SIZE - 1) ? { type: 'row', index: index + 1 } : { type: 'col', index: 0 };
+        } else {
+            nextFocus = (index < SIZE - 1) ? { type: 'col', index: index + 1 } : null;
+        }
+    }
+
+    function closeModal() {
+        inputModalEl.style.display = 'none';
+        currentEditing = null;
+        document.querySelectorAll('.hint-input-col, .hint-input-row').forEach(el => el.classList.remove('active'));
+    }
+
+    function confirmHint() {
+        if (!currentEditing) return;
+        saveHintFromInput();
+        closeModal();
+        
+        // 自动跳转下一个
+        if (nextFocus) {
+            setTimeout(() => openHintModal(nextFocus.type, nextFocus.index), 100);
+        }
+        statusEl.textContent = '';
+    }
+
+    function saveHintFromInput() {
+        const val = hintInputEl.value.trim();
+        let hints = [];
+        if (val) {
+            hints = val.split(/[\s,,]+/).map(Number).filter(n => n > 0);
+        }
+
+        if (currentEditing.type === 'row') {
+            rowHints[currentEditing.index] = hints;
+            updateHintDisplay('row', currentEditing.index, hints);
+        } else {
+            colHints[currentEditing.index] = hints;
+            updateHintDisplay('col', currentEditing.index, hints);
+        }
+    }
+
+    function clearCurrentHint() {
+        hintInputEl.value = '';
+        confirmHint();
+    }
+
+    function updateHintDisplay(type, index, hints) {
+        const el = document.getElementById(`${type}-hint-${index}`);
+        if (!el) return;
+        el.innerHTML = ''; 
+        if (hints.length === 0) {
+            el.textContent = '-';
+            el.style.color = '#bdc3c7';
+            el.style.fontWeight = 'normal';
+        } else {
+            el.style.color = '#2c3e50';
+            el.style.fontWeight = 'bold';
+            hints.forEach(num => {
+                const span = document.createElement('span');
+                span.textContent = num;
+                el.appendChild(span);
+            });
+        }
+    }
+
+    // --- 批量导入/导出逻辑 ---
+    function openBulkModal() {
+        bulkInputEl.value = generateExportText();
+        bulkModalEl.style.display = 'flex';
+        bulkInputEl.focus();
+        bulkInputEl.select();
+    }
+
+    function closeBulkModal() {
+        bulkModalEl.style.display = 'none';
+    }
+
+    function generateExportText() {
+        const rowStr = "行: " + rowHints.map(h => h.length ? h.join(' ') : '0').join(', ');
+        const colStr = "列: " + colHints.map(h => h.length ? h.join(' ') : '0').join(', ');
+        return `${rowStr}\n${colStr}`;
+    }
+
+    function exportToText() {
+        bulkInputEl.value = generateExportText();
+        bulkInputEl.select();
+        alert("已生成当前数据的文本格式，您可以复制它！");
+    }
+
+    function confirmBulkImport() {
+        const text = bulkInputEl.value.trim();
+        if (!text) {
+            alert("请输入内容！");
+            return;
+        }
+
+        try {
+            const lines = text.split('\n');
+            let rowsParsed = false;
+            let colsParsed = false;
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+
+                if (line.startsWith('行') || line.startsWith('Row')) {
+                    const content = line.split(':')[1].trim();
+                    const groups = content.split(/[,，]/);
+                    if (groups.length !== SIZE) throw new Error(`行数不对，应为${SIZE}组，实际${groups.length}组`);
+                    
+                    rowHints = groups.map((g, i) => {
+                        const nums = g.trim().split(/\s+/).map(Number).filter(n => n > 0);
+                        return nums.length === 1 && nums[0] === 0 ? [] : nums;
+                    });
+                    rowsParsed = true;
+                } else if (line.startsWith('列') || line.startsWith('Col') || line.startsWith('Column')) {
+                    const content = line.split(':')[1].trim();
+                    const groups = content.split(/[,，]/);
+                    if (groups.length !== SIZE) throw new Error(`列数不对，应为${SIZE}组，实际${groups.length}组`);
+
+                    colHints = groups.map((g, i) => {
+                        const nums = g.trim().split(/\s+/).map(Number).filter(n => n > 0);
+                        return nums.length === 1 && nums[0] === 0 ? [] : nums;
+                    });
+                    colsParsed = true;
+                }
+            });
+
+            if (!rowsParsed && !colsParsed) {
+                throw new Error("无法识别格式。请确保包含 '行: ...' 和 '列: ...'");
+            }
+
+            if (rowsParsed) {
+                for(let i=0; i<SIZE; i++) updateHintDisplay('row', i, rowHints[i]);
+            }
+            if (colsParsed) {
+                for(let i=0; i<SIZE; i++) updateHintDisplay('col', i, colHints[i]);
+            }
+
+            resetBoard();
+            closeBulkModal();
+            statusEl.textContent = '批量导入成功！';
+            statusEl.className = 'status-msg status-success';
+
+        } catch (e) {
+            alert("导入失败：" + e.message);
+        }
+    }
+
+    // --- 其他功能 ---
+    function clearHints() {
+        if(confirm("确定要清空所有线索吗？")) {
+            rowHints = Array(SIZE).fill(null).map(() => []);
+            colHints = Array(SIZE).fill(null).map(() => []);
+            resetBoard();
+            for(let i=0; i<SIZE; i++) {
+                updateHintDisplay('row', i, []);
+                updateHintDisplay('col', i, []);
+            }
+            statusEl.textContent = '线索已清空';
+        }
+    }
+
+    function resetBoard() {
+        gridState = Array(SIZE).fill(null).map(() => Array(SIZE).fill(0));
+        renderGrid();
+        statusEl.textContent = '';
+    }
+
+    function renderGrid() {
+        for (let r = 0; r < SIZE; r++) {
+            for (let c = 0; c < SIZE; c++) {
+                const cell = document.getElementById(`cell-${r}-${c}`);
+                if (!cell) continue;
+                cell.classList.remove('filled', 'cross');
+                if (gridState[r][c] === 1) cell.classList.add('filled');
+                else if (gridState[r][c] === 2) cell.classList.add('cross');
+            }
+        }
+    }
+
+    // ================= 解题核心逻辑 (保持不变) =================
+    function getPossibilities(lineHints, size) {
+        const possibilities = [];
+        function backtrack(index, currentPos, currentLine) {
+            if (index === lineHints.length) {
+                const remaining = size - currentPos;
+                const finalLine = currentLine.concat(Array(remaining).fill(0));
+                possibilities.push(finalLine);
+                return;
+            }
+            const blockLen = lineHints[index];
+            let minRequired = blockLen;
+            for (let i = index + 1; i < lineHints.length; i++) minRequired += lineHints[i] + 1;
+            
+            for (let start = currentPos; start <= size - minRequired; start++) {
+                const newLine = currentLine.slice();
+                while (newLine.length < start) newLine.push(0);
+                for (let k = 0; k < blockLen; k++) newLine.push(1);
+                if (index < lineHints.length - 1) newLine.push(0);
+                backtrack(index + 1, newLine.length, newLine);
+            }
+        }
+        if (lineHints.length === 0) {
+            possibilities.push(Array(size).fill(0));
+            return possibilities;
+        }
+        backtrack(0, 0, []);
+        return possibilities;
+    }
+
+    function solveLine(currentState, hints) {
+        const size = currentState.length;
+        const possibilities = getPossibilities(hints, size);
+        if (possibilities.length === 0) return null; 
+
+        const validPossibilities = possibilities.filter(p => {
+            for (let i = 0; i < size; i++) {
+                const state = currentState[i];
+                if (state === 1 && p[i] !== 1) return false;
+                if (state === 2 && p[i] !== 0) return false;
+            }
+            return true;
+        });
+
+        if (validPossibilities.length === 0) return null; 
+
+        const newState = Array(size).fill(0);
+        for (let i = 0; i < size; i++) {
+            let allOne = true;
+            let allZero = true;
+            for (const p of validPossibilities) {
+                if (p[i] !== 1) allOne = false;
+                if (p[i] !== 0) allZero = false;
+                if (!allOne && !allZero) break;
+            }
+            if (allOne) newState[i] = 1;
+            else if (allZero) newState[i] = 2;
+        }
+        return newState;
+    }
+
+    function solvePuzzle() {
+        statusEl.textContent = '正在计算...';
+        statusEl.className = 'status-msg status-pending';
+
+        setTimeout(() => {
+            let changed = true;
+            let iterations = 0;
+            let isContradiction = false;
+
+            while (changed && iterations < 200) {
+                changed = false;
+                iterations++;
+                for (let r = 0; r < SIZE; r++) {
+                    const result = solveLine(gridState[r], rowHints[r]);
+                    if (result === null) { isContradiction = true; break; }
+                    for (let c = 0; c < SIZE; c++) {
+                        if (gridState[r][c] !== result[c]) { gridState[r][c] = result[c]; changed = true; }
+                    }
+                }
+                if (isContradiction) break;
+                for (let c = 0; c < SIZE; c++) {
+                    let colState = [];
+                    for (let r = 0; r < SIZE; r++) colState.push(gridState[r][c]);
+                    const result = solveLine(colState, colHints[c]);
+                    if (result === null) { isContradiction = true; break; }
+                    for (let r = 0; r < SIZE; r++) {
+                        if (gridState[r][c] !== result[r]) { gridState[r][c] = result[r]; changed = true; }
+                    }
+                }
+            }
+
+            renderGrid();
+            if (isContradiction) {
+                statusEl.textContent = '错误：线索矛盾，无解！';
+                statusEl.className = 'status-msg status-error';
+            } else {
+                let unknownCount = 0;
+                for(let r=0; r<SIZE; r++) for(let c=0; c<SIZE; c++) if(gridState[r][c] === 0) unknownCount++;
+                if (unknownCount === 0) {
+                    statusEl.textContent = '成功：谜题已完全解开！';
+                    statusEl.className = 'status-msg status-success';
+                } else {
+                    statusEl.textContent = `部分完成：剩余 ${unknownCount} 个格子。`;
+                    statusEl.className = 'status-msg status-pending';
+                }
+            }
+        }, 50);
+    }
+
+    hintInputEl.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') confirmHint();
+    });
+    
+    inputModalEl.addEventListener('click', function(e) { if (e.target === inputModalEl) closeModal(); });
+    bulkModalEl.addEventListener('click', function(e) { if (e.target === bulkModalEl) closeBulkModal(); });
+
+    initBoard();
+</script>
+</body>
+</html>
