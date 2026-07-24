@@ -96,7 +96,7 @@
 <!-- 使用国内镜像服务，解决访问问题 -->
 <p align="center">
   <img src="https://stats.justsong.cn/api/github?username=qiaofeng6666&theme=default&show_icons=true&hide_title=true&hide_rank=true" alt="GitHub 统计" width="400" />
-  <img src="https://stats.justsong.cn/api/top-langs/?username=qiaofeng6666&layout=compact&hide_border=true&bg_color=00000000&text_color=333" alt="语言统计" width="340" />
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=qiaofeng6666&layout=compact&hide_border=true&bg_color=00000000&text_color=333" alt="语言统计" width="340" />
 </p>
 
 ---
