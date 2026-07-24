@@ -109,3 +109,5 @@
 git clone https://github.com/qiaofeng6666/qiaofeng6666.github.io.git
 cd qiaofeng6666.github.io
 # 用浏览器打开 HTML 文件夹里的对应文件即可
+```
+<p align="center"> <sub> 🌟 如果这些项目对你有帮助，欢迎给个 Star ⭐ </sub> <br> <sub> 📝 持续更新中 · 更多有趣的项目敬请期待 </sub> </p> 
