@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📈 股价涨跌幅计算器</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f6f9fc 0%, #e9f2f9 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0, 20, 40, 0.15), 0 8px 24px rgba(0, 0, 0, 0.05);
+      padding: 2.5rem 2.8rem;
+      max-width: 600px;
+      width: 100%;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 1.8rem 1.2rem;
+        border-radius: 2rem;
+      }
+    }
+
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 2rem;
+      font-weight: 600;
+      color: #0b2a3b;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+
+    .subhead {
+      color: #3a5a6e;
+      font-size: 0.95rem;
+      font-weight: 400;
+      border-left: 3px solid #3b8fc2;
+      padding-left: 0.8rem;
+      margin-bottom: 2rem;
+      background: rgba(59, 143, 194, 0.06);
+      border-radius: 0 8px 8px 0;
+      line-height: 1.5;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .input-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 500;
+      color: #1f4155;
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+    }
+
+    .input-group label span {
+      background: #d4e3ed;
+      border-radius: 40px;
+      padding: 0.1rem 0.7rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1f4a62;
+      margin-left: 0.2rem;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 60px;
+      padding: 0.2rem 0.2rem 0.2rem 1.2rem;
+      box-shadow: inset 0 2px 6px rgba(0, 20, 30, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+      border: 1px solid #dbe8f2;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: #2b7a9e;
+      box-shadow: 0 0 0 3px rgba(43, 122, 158, 0.2), inset 0 1px 4px rgba(0,0,0,0.02);
+    }
+
+    .input-wrapper .currency {
+      font-weight: 500;
+      color: #4e6f82;
+      margin-right: 0.4rem;
+      font-size: 1rem;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      border: none;
+      padding: 0.85rem 0.6rem 0.85rem 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #0b2a3b;
+      background: transparent;
+      outline: none;
+      transition: all 0.1s;
+    }
+
+    .input-wrapper input::placeholder {
+      color: #b2c9d8;
+      font-weight: 400;
+      font-size: 0.95rem;
+    }
+
+    .input-wrapper input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    .input-wrapper input[type="number"]::-webkit-outer-spin-button,
+    .input-wrapper input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      margin-top: 0.4rem;
+      margin-bottom: 2.2rem;
+    }
+
+    .btn {
+      background: #1a4d66;
+      border: none;
+      border-radius: 60px;
+      padding: 0.9rem 2.2rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: white;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 6px 12px rgba(26, 77, 102, 0.20);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      flex: 1 1 auto;
+      min-width: 140px;
+    }
+
+    .btn:hover {
+      background: #0f3b52;
+      transform: scale(0.98);
+      box-shadow: 0 4px 8px rgba(15, 59, 82, 0.25);
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #aec7d8;
+      color: #1f4a62;
+      box-shadow: none;
+      font-weight: 500;
+    }
+
+    .btn-outline:hover {
+      background: rgba(174, 199, 216, 0.15);
+      border-color: #7fa3bb;
+      transform: scale(0.98);
+      box-shadow: none;
+    }
+
+    .result-area {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 2rem;
+      padding: 1.5rem 1.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      margin-top: 0.6rem;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem 1rem;
+    }
+
+    @media (max-width: 460px) {
+      .result-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+      }
+    }
+
+    .result-item {
+      background: white;
+      border-radius: 1.4rem;
+      padding: 0.9rem 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      border: 1px solid #edf3f8;
+    }
+
+    .result-item .label {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #4f7389;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .result-item .value {
+      font-size: 1.7rem;
+      font-weight: 600;
+      color: #06212e;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .result-item .value.positive {
+      color: #0f7b4b;
+    }
+
+    .result-item .value.negative {
+      color: #b13a3a;
+    }
+
+    .result-item .value.neutral {
+      color: #4f6b7a;
+    }
+
+    .result-item .sub {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: #4f6f84;
+      margin-top: 0.15rem;
+      opacity: 0.8;
+    }
+
+    .footnote {
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: #4f6f84;
+      text-align: center;
+      border-top: 1px solid rgba(174, 199, 216, 0.25);
+      padding-top: 1rem;
+      letter-spacing: 0.01em;
+    }
+
+    .footnote i {
+      font-style: normal;
+      background: #dae8f0;
+      padding: 0.1rem 0.6rem;
+      border-radius: 30px;
+      font-weight: 500;
+    }
+
+    .error-msg {
+      background: #fce9e9;
+      color: #a13d3d;
+      border-radius: 40px;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      margin-top: 0.2rem;
+      display: none;
+      border-left: 4px solid #b13a3a;
+      font-weight: 450;
+    }
+
+    .error-msg.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card" role="main">
+  <h1>
+    <span>📊</span> 涨跌幅
+  </h1>
+  <div class="subhead">
+    输入开始与结束股价，立即计算涨跌额与涨跌幅
+  </div>
+
+  <!-- 开始股价 -->
+  <div class="input-group">
+    <label for="startPrice">
+      <span>🔹</span> 开始股价 <span>起始</span>
+    </label>
+    <div class="input-wrapper">
+      <span class="currency">$</span>
+      <input type="number" id="startPrice" placeholder="例如 120.50" step="0.001" min="0" inputmode="decimal" value="100.00">
+    </div>
+  </div>
+
+  <!-- 结束股价 -->
+  <div class="input-group">
+    <label for="endPrice">
+      <span>🔸</span> 结束股价 <span>期末</span>
+    </label>
+    <div class="input-wrapper">
+      <span class="currency">$</span>
+      <input type="number" id="endPrice" placeholder="例如 145.75" step="0.001" min="0" inputmode="decimal" value="145.75">
+    </div>
+  </div>
+
+  <!-- 操作按钮 + 清空 -->
+  <div class="action-row">
+    <button class="btn" id="calcBtn">📈 计算涨跌幅</button>
+    <button class="btn btn-outline" id="clearBtn">⟲ 清空</button>
+  </div>
+
+  <!-- 错误信息 -->
+  <div id="errorMsg" class="error-msg">⚠️ 请输入有效的正数股价</div>
+
+  <!-- 结果展示 -->
+  <div class="result-area" id="resultArea">
+    <div class="result-grid">
+      <div class="result-item">
+        <span class="label">📉 涨跌额</span>
+        <div class="value" id="changeAmount">+45.75</div>
+        <div class="sub" id="changeAmountSub">每股</div>
+      </div>
+      <div class="result-item">
+        <span class="label">📊 涨跌幅</span>
+        <div class="value" id="changePercent">+45.75%</div>
+        <div class="sub" id="changePercentSub">相对起始价</div>
+      </div>
+      <div class="result-item" style="grid-column: 1 / -1; background: #edf5fa; border-color: #c3dbe9;">
+        <span class="label" style="color: #1a4d66;">📌 开始 → 结束</span>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.2rem 0.6rem;">
+          <span style="font-weight: 500; color: #0b2a3b;" id="startDisplay">$100.00</span>
+          <span style="color: #486f84; font-size: 1.2rem;">→</span>
+          <span style="font-weight: 500; color: #0b2a3b;" id="endDisplay">$145.75</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    <i>涨跌幅 = (结束价 − 开始价) / 开始价 × 100%</i>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // DOM elements
+    const startInput = document.getElementById('startPrice');
+    const endInput = document.getElementById('endPrice');
+    const calcBtn = document.getElementById('calcBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // result fields
+    const changeAmount = document.getElementById('changeAmount');
+    const changePercent = document.getElementById('changePercent');
+    const changeAmountSub = document.getElementById('changeAmountSub');
+    const changePercentSub = document.getElementById('changePercentSub');
+    const startDisplay = document.getElementById('startDisplay');
+    const endDisplay = document.getElementById('endDisplay');
+
+    // 辅助：格式化数字为货币（保留2位小数，带$符号）
+    function formatCurrency(value) {
+      if (value === undefined || value === null || !isFinite(value)) return '$0.00';
+      return '$' + value.toFixed(2);
+    }
+
+    // 辅助：格式化百分比（保留2位小数 + %）
+    function formatPercent(value) {
+      if (value === undefined || value === null || !isFinite(value)) return '0.00%';
+      return value.toFixed(2) + '%';
+    }
+
+    // 核心计算 & 更新UI
+    function calculateAndDisplay() {
+      // 清除错误状态
+      errorMsg.classList.remove('show');
+
+      // 获取输入值，去除首尾空格，转为数字
+      const startRaw = startInput.value.trim();
+      const endRaw = endInput.value.trim();
+
+      // 空值检查
+      if (startRaw === '' || endRaw === '') {
+        errorMsg.textContent = '⚠️ 请同时输入开始股价和结束股价';
+        errorMsg.classList.add('show');
+        return;
+      }
+
+      const startNum = parseFloat(startRaw);
+      const endNum = parseFloat(endRaw);
+
+      // 有效性检查：必须是数字，且大于等于0（允许0，但0会导致除零，单独处理）
+      if (isNaN(startNum) || isNaN(endNum)) {
+        errorMsg.textContent = '⚠️ 请输入有效的数字 (例如 120.50)';
+        errorMsg.classList.add('show');
+        return;
+      }
+
+      // 允许价格为0？ 若开始价为0，涨跌幅无意义（除零），但可显示涨跌额。
+      if (startNum === 0 && endNum === 0) {
+        // 两者都是0，涨跌额0，涨跌幅0% (不报错，显示中性)
+        const diff = 0;
+        const percent = 0;
+        updateResults(diff, percent, startNum, endNum);
+        return;
+      }
+
+      if (startNum === 0) {
+        // 开始价为0，结束价不为0：涨跌额 = end，但涨跌幅无限大，显示特殊信息
+        const diff = endNum - 0;
+        // 涨跌幅显示为 "∞" 或 "—"，但我们用 "N/A" 并提示
+        changeAmount.textContent = formatCurrency(diff);
+        changeAmount.className = 'value ' + (diff > 0 ? 'positive' : (diff < 0 ? 'negative' : 'neutral'));
+        changeAmountSub.textContent = '每股 (起始价为0)';
+
+        changePercent.textContent = '∞';
+        changePercent.className = 'value neutral';
+        changePercentSub.textContent = '除零无意义';
+
+        // 更新开始/结束显示
+        startDisplay.textContent = formatCurrency(startNum);
+        endDisplay.textContent = formatCurrency(endNum);
+        return;
+      }
+
+      // 正常计算
+      const diff = endNum - startNum;
+      const percent = (diff / startNum) * 100;
+
+      // 更新结果
+      updateResults(diff, percent, startNum, endNum);
+    }
+
+    // 统一更新结果区域
+    function updateResults(diff, percent, startNum, endNum) {
+      // 涨跌额
+      const diffAbs = Math.abs(diff);
+      changeAmount.textContent = formatCurrency(diff);
+      // 颜色 & 符号
+      if (diff > 0.0001) {
+        changeAmount.className = 'value positive';
+        changeAmountSub.textContent = `+${diffAbs.toFixed(2)} 每股`;
+      } else if (diff < -0.0001) {
+        changeAmount.className = 'value negative';
+        changeAmountSub.textContent = `-${diffAbs.toFixed(2)} 每股`;
+      } else {
+        changeAmount.className = 'value neutral';
+        changeAmountSub.textContent = '±0.00 每股';
+      }
+
+      // 涨跌幅
+      const percentAbs = Math.abs(percent);
+      if (percent > 0.0001) {
+        changePercent.className = 'value positive';
+        changePercent.textContent = `+${percent.toFixed(2)}%`;
+        changePercentSub.textContent = `+${percentAbs.toFixed(2)}% 相对起始`;
+      } else if (percent < -0.0001) {
+        changePercent.className = 'value negative';
+        changePercent.textContent = `${percent.toFixed(2)}%`;
+        changePercentSub.textContent = `-${percentAbs.toFixed(2)}% 相对起始`;
+      } else {
+        changePercent.className = 'value neutral';
+        changePercent.textContent = '0.00%';
+        changePercentSub.textContent = '无变化';
+      }
+
+      // 更新开始/结束显示 (保留两位)
+      startDisplay.textContent = formatCurrency(startNum);
+      endDisplay.textContent = formatCurrency(endNum);
+    }
+
+    // 清空输入 & 重置结果为示例
+    function clearAll() {
+      startInput.value = '';
+      endInput.value = '';
+      errorMsg.classList.remove('show');
+
+      // 重置显示为占位符风格 (可展示空状态)
+      changeAmount.textContent = '—';
+      changeAmount.className = 'value neutral';
+      changeAmountSub.textContent = '等待输入';
+
+      changePercent.textContent = '—';
+      changePercent.className = 'value neutral';
+      changePercentSub.textContent = '等待输入';
+
+      startDisplay.textContent = '$0.00';
+      endDisplay.textContent = '$0.00';
+
+      // 聚焦开始输入
+      startInput.focus();
+    }
+
+    // 事件绑定
+    calcBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      calculateAndDisplay();
+    });
+
+    clearBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      clearAll();
+    });
+
+    // 按回车键触发计算 (在输入框内)
+    startInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        calculateAndDisplay();
+      }
+    });
+    endInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        calculateAndDisplay();
+      }
+    });
+
+    // 页面加载后自动计算一次（基于默认值100和145.75）
+    window.addEventListener('load', function() {
+      // 但为了演示，直接调用计算 (保证默认值存在)
+      calculateAndDisplay();
+    });
+
+    // 额外：如果用户修改输入，不清除错误，但提供实时反馈？不自动计算，等待点击或回车
+    // 但是当用户清空后点击计算，会有错误提示。
+    // 为提升体验: 输入时若有错误信息，自动隐藏错误框（但保留计算结果不变）
+    startInput.addEventListener('input', function() {
+      errorMsg.classList.remove('show');
+    });
+    endInput.addEventListener('input', function() {
+      errorMsg.classList.remove('show');
+    });
+
+  })();
+</script>
+
+</body>
+</html>
