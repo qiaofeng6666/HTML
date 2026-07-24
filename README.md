@@ -1,10 +1,111 @@
-# 🌐 HTML 网页项目集
+<!-- 头部 Banner - 打字动画效果 -->
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=24&pause=1000&color=4F8CF7&center=true&vCenter=true&width=435&lines=%F0%9F%8C%90+HTML+%E7%BD%91%E9%A1%B5%E9%A1%B9%E7%9B%AE%E9%9B%86;%E5%89%8D%E7%AB%AF%E5%AE%9E%E8%B7%B5%E4%BD%9C%E5%93%81%E5%B1%95%E7%A4%BA" alt="Typing SVG" />
+</p>
 
-## [1.shuzhi](https://qiaofeng6666.github.io//HTML/1.shuzhi/shuzhi.html)
-一个15X15的数织计算器
+<p align="center">
+  <!-- 项目统计徽章（动态显示项目数量） -->
+  <img src="https://img.shields.io/badge/📦_项目总数-3-4F8CF7?style=for-the-badge&logo=github" alt="项目总数" />
+  <img src="https://img.shields.io/badge/📅_最后更新-2026.07-4FC7F7?style=for-the-badge" alt="最后更新" />
+  <img src="https://img.shields.io/badge/🛠️_技术栈-HTML+CSS+JS-FFD700?style=for-the-badge&logo=javascript" alt="技术栈" />
+</p>
 
-## [2.dashabi](https://qiaofeng6666.github.io//HTML/2.dashabi/dashabi.html)
-一个滚灯弹幕类型的网页
+---
 
-## [3.gujia](https://qiaofeng6666.github.io//HTML/3.gujia/gujia)
-一个计算股价涨跌幅的网页
+## 🧩 项目列表
+
+<!-- 项目卡片 1：数织计算器 -->
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%" valign="top">
+        <h3>
+          <a href="https://qiaofeng6666.github.io//HTML/1.shuzhi/shuzhi.html">
+            <img src="https://img.shields.io/badge/🧩_数织计算器-15×15-4F8CF7?style=for-the-badge" alt="数织计算器" />
+          </a>
+        </h3>
+        <p>
+          <img src="https://img.shields.io/badge/状态-✅_可运行-brightgreen" alt="状态" />
+          <img src="https://img.shields.io/badge/难度-⭐⭐⭐-orange" alt="难度" />
+        </p>
+        <p align="left">
+          <b>📌 简介：</b>一个 15×15 的数织（Nonogram）计算器，帮助你快速求解像素谜题。
+        </p>
+        <p align="left">
+          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/1.shuzhi/shuzhi.html">点击打开 →</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- 项目卡片 2：滚灯弹幕 -->
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%" valign="top">
+        <h3>
+          <a href="https://qiaofeng6666.github.io//HTML/2.dashabi/dashabi.html">
+            <img src="https://img.shields.io/badge/🎡_滚灯弹幕-动态交互-FF6B6B?style=for-the-badge" alt="滚灯弹幕" />
+          </a>
+        </h3>
+        <p>
+          <img src="https://img.shields.io/badge/状态-✨_可运行-brightgreen" alt="状态" />
+          <img src="https://img.shields.io/badge/类型-视觉效果-9B59B6?style=flat-square" alt="类型" />
+        </p>
+        <p align="left">
+          <b>📌 简介：</b>一个滚灯弹幕类型的网页，带来独特的动态视觉体验。
+        </p>
+        <p align="left">
+          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/2.dashabi/dashabi.html">点击打开 →</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- 项目卡片 3：股价涨跌幅计算器 -->
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%" valign="top">
+        <h3>
+          <a href="https://qiaofeng6666.github.io//HTML/3.gujia/gujia">
+            <img src="https://img.shields.io/badge/📈_股价计算器-涨跌幅分析-2ECC71?style=for-the-badge" alt="股价计算器" />
+          </a>
+        </h3>
+        <p>
+          <img src="https://img.shields.io/badge/状态-✅_可运行-brightgreen" alt="状态" />
+          <img src="https://img.shields.io/badge/类型-金融工具-1ABC9C?style=flat-square" alt="类型" />
+        </p>
+        <p align="left">
+          <b>📌 简介：</b>一个计算股价涨跌幅的网页，帮你快速分析投资回报。
+        </p>
+        <p align="left">
+          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/3.gujia/gujia">点击打开 →</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## 📊 项目动态
+
+<!-- 这里会显示你最近的活动，像 GitHub 的贡献图一样 -->
+<p align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=qiaofeng6666&show_icons=true&theme=default&hide_title=true&hide_rank=true&hide_border=true&bg_color=00000000&text_color=333&icon_color=4F8CF7" alt="GitHub 统计" width="400" />
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=qiaofeng6666&layout=compact&hide_border=true&bg_color=00000000&text_color=333" alt="语言统计" width="340" />
+</p>
+
+---
+
+## 🚀 本地运行
+
+如果你想在本地查看这些项目：
+
+```bash
+git clone https://github.com/qiaofeng6666/qiaofeng6666.github.io.git
+cd qiaofeng6666.github.io
+# 用浏览器打开 HTML 文件夹里的对应文件即可
