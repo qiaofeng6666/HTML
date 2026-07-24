@@ -98,9 +98,11 @@
   <img src="https://stats.justsong.cn/api/github?username=qiaofeng6666&theme=default&show_icons=true&hide_title=true&hide_rank=true" alt="GitHub 统计" width="400" />
 </p>
 
-<!-- 语言统计改用 anuraghazra 的国内 CDN 镜像 -->
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/anuraghazra/github-readme-stats@master/generated/top-langs.svg?username=qiaofeng6666&layout=compact&hide_border=true&bg_color=00000000&text_color=333&title_color=4F8CF7" alt="语言统计" width="340" />
+  <b>📚 常用语言：</b>
+  <img src="https://img.shields.io/badge/HTML-59%25-E34F26?style=flat-square&logo=html5" />
+  <img src="https://img.shields.io/badge/CSS-21%25-1572B6?style=flat-square&logo=css3" />
+  <img src="https://img.shields.io/badge/JavaScript-20%25-F7DF1E?style=flat-square&logo=javascript" />
 </p>
 
 ---
