@@ -1,6 +1,6 @@
 # 🌐 HTML 网页项目集
 
-## [1.shuzhi](https://qiaofeng6666.github.io/HTML/1.shuzhi/shuzhi.html)
+## [1.shuzhi](/1.shuzhi/shuzhi.html)
 一个15X15的数织计算器
 
 ## [2.dashabi](/2.dashabi/dashabi.html)
