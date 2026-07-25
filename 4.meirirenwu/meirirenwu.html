@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
-  <title>每日使命</title>
+  <title>每日使命 · 自动重置</title>
   <style>
     /* ===== CSS 变量 (主题) ===== */
     :root {
@@ -19,7 +19,6 @@
       --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* ===== 全局重置 & 字体 ===== */
     * {
       margin: 0;
       padding: 0;
@@ -41,7 +40,6 @@
       padding-top: 40px;
     }
 
-    /* ===== 动态星空粒子背景 (Canvas) ===== */
     #star-canvas {
       position: fixed;
       top: 0;
@@ -52,7 +50,6 @@
       pointer-events: none;
     }
 
-    /* ===== 主容器 ===== */
     .app-container {
       position: relative;
       z-index: 1;
@@ -61,7 +58,6 @@
       backdrop-filter: blur(2px);
     }
 
-    /* ===== 顶部：今日之锚 + 进度 ===== */
     .header-section {
       display: flex;
       justify-content: space-between;
@@ -124,7 +120,6 @@
       -webkit-text-fill-color: rgba(255,255,255,0.1);
     }
 
-    /* ===== 任务列表 ===== */
     .task-list {
       display: flex;
       flex-direction: column;
@@ -132,7 +127,6 @@
       margin: 28px 0 20px;
     }
 
-    /* ===== 任务卡片 - 三种状态 ===== */
     .task-card {
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
@@ -153,7 +147,6 @@
       100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ---- 状态：已完成 ---- */
     .task-card.status-done {
       border-color: #10b981;
       background: rgba(16, 185, 129, 0.08);
@@ -171,7 +164,6 @@
       color: white;
     }
 
-    /* ---- 状态：已跳过 ---- */
     .task-card.status-skip {
       border-color: #6b7280;
       background: rgba(107, 114, 128, 0.08);
@@ -191,7 +183,6 @@
       color: white;
     }
 
-    /* ---- 状态：待办 ---- */
     .task-card.status-todo .task-status-badge {
       background: var(--glass-border);
       color: var(--text-secondary);
@@ -279,7 +270,6 @@
       background: rgba(245, 158, 11, 0.1);
     }
 
-    /* ===== 添加任务 - 浮动圆形按钮 ===== */
     .fab-add-task {
       position: fixed;
       bottom: 32px;
@@ -320,7 +310,6 @@
       transform: rotate(45deg);
     }
 
-    /* ===== 添加表单 - 底部弹出 ===== */
     .add-task-overlay {
       position: fixed;
       bottom: 0;
@@ -448,7 +437,6 @@
       color: var(--text-primary);
     }
 
-    /* ===== 响应式 ===== */
     @media (max-width: 600px) {
       body { padding: 12px; padding-top: 24px; padding-bottom: 100px; }
       .header-section { flex-direction: column; align-items: stretch; }
@@ -490,7 +478,6 @@
       }
     }
 
-    /* 隐藏重置按钮 */
     .hidden-reset {
       position: fixed;
       bottom: 10px;
@@ -510,7 +497,6 @@
       background: rgba(255,255,255,0.03);
     }
 
-    /* 空状态 */
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -524,17 +510,40 @@
       display: block;
       margin-bottom: 12px;
     }
+
+    /* 重置提示条 */
+    .reset-toast {
+      position: fixed;
+      bottom: 110px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16, 185, 129, 0.2);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 10px 24px;
+      border-radius: 60px;
+      color: #a7f3d0;
+      font-size: 0.9rem;
+      z-index: 200;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      pointer-events: none;
+      animation: fadeInOut 2.8s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(16px); }
+      15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    }
   </style>
 </head>
 <body>
-  <!-- 星空粒子 Canvas -->
   <canvas id="star-canvas"></canvas>
 
-  <!-- 隐藏重置按钮 -->
-  <button class="hidden-reset" id="resetAllBtn" title="重置所有数据 (双击)">⚙️ 重置数据</button>
+  <button class="hidden-reset" id="resetAllBtn" title="双击重置所有任务">⚙️ 重置数据</button>
 
   <div class="app-container">
-    <!-- 顶部: 每日寄语 + 统计 -->
     <div class="header-section">
       <div class="quote-box">
         <div class="quote-text" id="dailyQuote">✦ 加载今日箴言...</div>
@@ -548,16 +557,13 @@
       </div>
     </div>
 
-    <!-- 任务列表 -->
     <div class="task-list" id="taskList"></div>
   </div>
 
-  <!-- 浮动圆形添加按钮 -->
   <button class="fab-add-task" id="fabAddTask">
     <span class="icon" id="fabIcon">+</span>
   </button>
 
-  <!-- 添加任务 - 底部弹出面板 -->
   <div class="add-task-overlay" id="addTaskOverlay">
     <div class="add-task-panel">
       <div class="panel-title">📋 添加新任务</div>
@@ -573,339 +579,381 @@
   </div>
 
   <script>
-    // ======================================================================
-    //  1. 数据层 & localStorage
-    // ======================================================================
-    const STORAGE_KEY = 'daily_mission_data_v2';
-    let tasks = [];
+    (function() {
+      // ======================================================================
+      //  1. 数据层 & localStorage
+      // ======================================================================
+      const STORAGE_KEY = 'daily_mission_data_v2';
+      const RESET_KEY = 'daily_mission_last_reset_date';  // 记录上次重置日期
+      let tasks = [];
 
-    // 内置励志名言库 (30+)
-    const QUOTES = [
-      "行动是治愈恐惧的良药。", "千里之行，始于足下。", "不要等待机会，而要创造机会。",
-      "生活就像骑自行车，要保持平衡就得往前走。", "只有极其努力，才能看起来毫不费力。",
-      "今日事，今日毕。", "伟大源于勇敢的开始。", "专注是成功的基石。",
-      "每一次坚持，都是向目标靠近。", "自律即自由。", "做最重要的事，而非最容易的事。",
-      "勇气不是没有恐惧，而是战胜恐惧。", "你的时间有限，不要浪费在别人的生活里。",
-      "先做最难的事，其余都会变得简单。", "成功是日复一日微小努力的积累。",
-      "不要问世界需要什么，问你自己擅长什么。", "改变从今天开始。",
-      "每天进步1%，一年强大37倍。", "信念是鸟，在黎明前歌唱。",
-      "做你害怕的事，害怕就会消失。", "专注当下，就是最好的修行。",
-      "使命不是口号，是每一步的行动。", "你比自己想象的更强大。",
-      "坚持最难，但回报也最大。", "未来属于那些相信梦想之美的人。",
-      "没有失败，只有反馈。", "行动胜于空谈。", "心之所向，素履以往。",
-      "生如逆旅，一苇以航。", "凡心所向，素履所往。", "生如夏花之绚烂。"
-    ];
+      const QUOTES = [
+        "行动是治愈恐惧的良药。", "千里之行，始于足下。", "不要等待机会，而要创造机会。",
+        "生活就像骑自行车，要保持平衡就得往前走。", "只有极其努力，才能看起来毫不费力。",
+        "今日事，今日毕。", "伟大源于勇敢的开始。", "专注是成功的基石。",
+        "每一次坚持，都是向目标靠近。", "自律即自由。", "做最重要的事，而非最容易的事。",
+        "勇气不是没有恐惧，而是战胜恐惧。", "你的时间有限，不要浪费在别人的生活里。",
+        "先做最难的事，其余都会变得简单。", "成功是日复一日微小努力的积累。",
+        "不要问世界需要什么，问你自己擅长什么。", "改变从今天开始。",
+        "每天进步1%，一年强大37倍。", "信念是鸟，在黎明前歌唱。",
+        "做你害怕的事，害怕就会消失。", "专注当下，就是最好的修行。",
+        "使命不是口号，是每一步的行动。", "你比自己想象的更强大。",
+        "坚持最难，但回报也最大。", "未来属于那些相信梦想之美的人。",
+        "没有失败，只有反馈。", "行动胜于空谈。", "心之所向，素履以往。",
+        "生如逆旅，一苇以航。", "凡心所向，素履所往。", "生如夏花之绚烂。"
+      ];
 
-    // ======================================================================
-    //  2. 初始化 & 渲染
-    // ======================================================================
-    function loadData() {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try { tasks = JSON.parse(stored); } catch(e){ tasks = []; }
-      } else {
-        // 默认示例任务
-        tasks = [
-          { id: Date.now()+1, keyword: '晨跑', desc: '5公里 有氧', status: 'todo' },
-          { id: Date.now()+2, keyword: '阅读', desc: '《吃掉那只青蛙》30页', status: 'todo' },
-          { id: Date.now()+3, keyword: '项目原型', desc: 'UI 设计初稿', status: 'todo' },
-        ];
-      }
-      renderAll();
-    }
-
-    function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    }
-
-    function renderAll() {
-      renderTasks();
-      updateStats();
-    }
-
-    function renderTasks() {
-      const container = document.getElementById('taskList');
-      container.innerHTML = '';
-
-      if (tasks.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <span class="emoji">🚀</span>
-            还没有任务，点击右下角「+」开始添加吧！
-          </div>
-        `;
-        return;
+      // ======================================================================
+      //  2. 每日重置逻辑 (核心新增)
+      // ======================================================================
+      function getTodayDateStr() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       }
 
-      tasks.forEach((task, index) => {
-        const card = document.createElement('div');
-        card.className = `task-card status-${task.status || 'todo'}`;
-        card.dataset.index = index;
+      // 重置所有任务状态为 'todo'，并保存重置日期
+      function resetTasksForNewDay() {
+        const today = getTodayDateStr();
+        const lastReset = localStorage.getItem(RESET_KEY);
 
-        // 状态标签
-        const badge = document.createElement('span');
-        badge.className = 'task-status-badge';
-        const statusMap = {
-          'todo': '待办',
-          'done': '✅ 已完成',
-          'skip': '⏭️ 跳过'
-        };
-        badge.textContent = statusMap[task.status] || '待办';
+        // 如果今天已经重置过，不再重置
+        if (lastReset === today) return false;
 
-        // 内容
-        const content = document.createElement('div');
-        content.className = 'task-content';
-        const kw = document.createElement('div');
-        kw.className = 'task-keyword';
-        kw.textContent = task.keyword || '未命名';
-        const desc = document.createElement('div');
-        desc.className = 'task-desc';
-        desc.textContent = task.desc || '';
-        content.appendChild(kw);
-        content.appendChild(desc);
+        // 重置所有任务状态 (保留 id, keyword, desc)
+        let changed = false;
+        tasks.forEach(t => {
+          if (t.status && t.status !== 'todo') {
+            t.status = 'todo';
+            changed = true;
+          }
+        });
 
-        // 操作按钮
-        const actions = document.createElement('div');
-        actions.className = 'task-actions';
-
-        if (task.status === 'todo') {
-          const doneBtn = document.createElement('button');
-          doneBtn.className = 'btn-icon done-btn';
-          doneBtn.textContent = '✅';
-          doneBtn.title = '标记为已完成';
-          doneBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            setTaskStatus(index, 'done');
-          });
-
-          const skipBtn = document.createElement('button');
-          skipBtn.className = 'btn-icon skip-btn';
-          skipBtn.textContent = '⏭️';
-          skipBtn.title = '今天不做，跳过';
-          skipBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            setTaskStatus(index, 'skip');
-          });
-
-          actions.appendChild(doneBtn);
-          actions.appendChild(skipBtn);
+        if (changed) {
+          saveData();
+          localStorage.setItem(RESET_KEY, today);
+          showResetToast('🔄 新的一天！任务状态已重置为待办');
         } else {
-          const undoBtn = document.createElement('button');
-          undoBtn.className = 'btn-icon undo-btn';
-          undoBtn.textContent = '↩️';
-          undoBtn.title = '撤销，回到待办';
-          undoBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            setTaskStatus(index, 'todo');
-          });
-          actions.appendChild(undoBtn);
+          // 即使没有任务被改变，也更新日期，避免重复检查
+          localStorage.setItem(RESET_KEY, today);
+        }
+        return changed;
+      }
+
+      // 显示一个优雅的 Toast 提示
+      function showResetToast(msg) {
+        const old = document.querySelector('.reset-toast');
+        if (old) old.remove();
+
+        const toast = document.createElement('div');
+        toast.className = 'reset-toast';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
+      }
+
+      // ======================================================================
+      //  3. 数据读写 & 渲染
+      // ======================================================================
+      function loadData() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          try { tasks = JSON.parse(stored); } catch(e){ tasks = []; }
+        } else {
+          // 默认示例任务
+          tasks = [
+            { id: Date.now()+1, keyword: '晨跑', desc: '5公里 有氧', status: 'todo' },
+            { id: Date.now()+2, keyword: '阅读', desc: '《吃掉那只青蛙》30页', status: 'todo' },
+            { id: Date.now()+3, keyword: '项目原型', desc: 'UI 设计初稿', status: 'todo' },
+          ];
+          saveData();
         }
 
-        const delBtn = document.createElement('button');
-        delBtn.className = 'btn-icon delete';
-        delBtn.textContent = '✕';
-        delBtn.title = '删除任务';
-        delBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          deleteTask(index);
-        });
-        actions.appendChild(delBtn);
+        // ★ 每日重置：在加载数据后立即检查并重置
+        resetTasksForNewDay();
 
-        card.appendChild(badge);
-        card.appendChild(content);
-        card.appendChild(actions);
-        container.appendChild(card);
-      });
-    }
-
-    function updateStats() {
-      const total = tasks.length;
-      const done = tasks.filter(t => t.status === 'done').length;
-      const skip = tasks.filter(t => t.status === 'skip').length;
-      document.getElementById('totalCount').textContent = total;
-      document.getElementById('doneCount').textContent = done;
-      document.getElementById('skipCount').textContent = skip;
-    }
-
-    // ======================================================================
-    //  3. 任务操作
-    // ======================================================================
-    function addTask(keyword, desc) {
-      if (!keyword.trim()) {
-        alert('请填写任务关键词');
-        return false;
+        renderAll();
       }
-      tasks.push({
-        id: Date.now(),
-        keyword: keyword.trim(),
-        desc: desc.trim() || '',
-        status: 'todo'
-      });
-      saveData();
-      renderAll();
-      closeAddForm();
-      return true;
-    }
 
-    function deleteTask(index) {
-      if (index < 0 || index >= tasks.length) return;
-      if (confirm(`确定要删除任务「${tasks[index].keyword}」吗？`)) {
-        tasks.splice(index, 1);
+      function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      }
+
+      function renderAll() {
+        renderTasks();
+        updateStats();
+      }
+
+      function renderTasks() {
+        const container = document.getElementById('taskList');
+        container.innerHTML = '';
+
+        if (tasks.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <span class="emoji">🚀</span>
+              还没有任务，点击右下角「+」开始添加吧！
+            </div>
+          `;
+          return;
+        }
+
+        tasks.forEach((task, index) => {
+          const card = document.createElement('div');
+          card.className = `task-card status-${task.status || 'todo'}`;
+          card.dataset.index = index;
+
+          const badge = document.createElement('span');
+          badge.className = 'task-status-badge';
+          const statusMap = {
+            'todo': '待办',
+            'done': '✅ 已完成',
+            'skip': '⏭️ 跳过'
+          };
+          badge.textContent = statusMap[task.status] || '待办';
+
+          const content = document.createElement('div');
+          content.className = 'task-content';
+          const kw = document.createElement('div');
+          kw.className = 'task-keyword';
+          kw.textContent = task.keyword || '未命名';
+          const desc = document.createElement('div');
+          desc.className = 'task-desc';
+          desc.textContent = task.desc || '';
+          content.appendChild(kw);
+          content.appendChild(desc);
+
+          const actions = document.createElement('div');
+          actions.className = 'task-actions';
+
+          if (task.status === 'todo') {
+            const doneBtn = document.createElement('button');
+            doneBtn.className = 'btn-icon done-btn';
+            doneBtn.textContent = '✅';
+            doneBtn.title = '标记为已完成';
+            doneBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              setTaskStatus(index, 'done');
+            });
+
+            const skipBtn = document.createElement('button');
+            skipBtn.className = 'btn-icon skip-btn';
+            skipBtn.textContent = '⏭️';
+            skipBtn.title = '今天不做，跳过';
+            skipBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              setTaskStatus(index, 'skip');
+            });
+
+            actions.appendChild(doneBtn);
+            actions.appendChild(skipBtn);
+          } else {
+            const undoBtn = document.createElement('button');
+            undoBtn.className = 'btn-icon undo-btn';
+            undoBtn.textContent = '↩️';
+            undoBtn.title = '撤销，回到待办';
+            undoBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              setTaskStatus(index, 'todo');
+            });
+            actions.appendChild(undoBtn);
+          }
+
+          const delBtn = document.createElement('button');
+          delBtn.className = 'btn-icon delete';
+          delBtn.textContent = '✕';
+          delBtn.title = '删除任务';
+          delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteTask(index);
+          });
+          actions.appendChild(delBtn);
+
+          card.appendChild(badge);
+          card.appendChild(content);
+          card.appendChild(actions);
+          container.appendChild(card);
+        });
+      }
+
+      function updateStats() {
+        const total = tasks.length;
+        const done = tasks.filter(t => t.status === 'done').length;
+        const skip = tasks.filter(t => t.status === 'skip').length;
+        document.getElementById('totalCount').textContent = total;
+        document.getElementById('doneCount').textContent = done;
+        document.getElementById('skipCount').textContent = skip;
+      }
+
+      // ======================================================================
+      //  4. 任务操作
+      // ======================================================================
+      function addTask(keyword, desc) {
+        if (!keyword.trim()) {
+          alert('请填写任务关键词');
+          return false;
+        }
+        tasks.push({
+          id: Date.now(),
+          keyword: keyword.trim(),
+          desc: desc.trim() || '',
+          status: 'todo'
+        });
+        saveData();
+        renderAll();
+        closeAddForm();
+        return true;
+      }
+
+      function deleteTask(index) {
+        if (index < 0 || index >= tasks.length) return;
+        if (confirm(`确定要删除任务「${tasks[index].keyword}」吗？`)) {
+          tasks.splice(index, 1);
+          saveData();
+          renderAll();
+        }
+      }
+
+      function setTaskStatus(index, status) {
+        if (index < 0 || index >= tasks.length) return;
+        tasks[index].status = status;
         saveData();
         renderAll();
       }
-    }
 
-    function setTaskStatus(index, status) {
-      if (index < 0 || index >= tasks.length) return;
-      tasks[index].status = status;
-      saveData();
-      renderAll();
-    }
-
-    // ======================================================================
-    //  4. 添加表单控制 (底部弹出)
-    // ======================================================================
-    function openAddForm() {
-      const overlay = document.getElementById('addTaskOverlay');
-      const icon = document.getElementById('fabIcon');
-      overlay.classList.add('open');
-      icon.classList.add('open');
-      document.body.style.overflow = 'hidden';
-      setTimeout(() => {
-        document.getElementById('keywordInput').focus();
-      }, 200);
-    }
-
-    function closeAddForm() {
-      const overlay = document.getElementById('addTaskOverlay');
-      const icon = document.getElementById('fabIcon');
-      overlay.classList.remove('open');
-      icon.classList.remove('open');
-      document.body.style.overflow = '';
-      document.getElementById('keywordInput').value = '';
-      document.getElementById('descInput').value = '';
-    }
-
-    function toggleAddForm() {
-      const overlay = document.getElementById('addTaskOverlay');
-      if (overlay.classList.contains('open')) {
-        closeAddForm();
-      } else {
-        openAddForm();
-      }
-    }
-
-    // ======================================================================
-    //  5. 每日箴言
-    // ======================================================================
-    function setDailyQuote() {
-      const quoteEl = document.getElementById('dailyQuote');
-      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-      const idx = dayOfYear % QUOTES.length;
-      quoteEl.innerHTML = `✦ ${QUOTES[idx]}`;
-    }
-
-    // ======================================================================
-    //  6. 星空粒子 (Canvas)
-    // ======================================================================
-    function initStars() {
-      const canvas = document.getElementById('star-canvas');
-      const ctx = canvas.getContext('2d');
-      let w, h;
-      function resize() {
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
-      }
-      window.addEventListener('resize', resize);
-      resize();
-
-      const stars = [];
-      const count = 120;
-      for (let i=0; i<count; i++) {
-        stars.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          r: 0.6 + Math.random() * 1.2,
-          speed: 0.1 + Math.random() * 0.3,
-          offset: Math.random() * 1000,
-        });
+      // ======================================================================
+      //  5. 添加表单控制
+      // ======================================================================
+      function openAddForm() {
+        const overlay = document.getElementById('addTaskOverlay');
+        const icon = document.getElementById('fabIcon');
+        overlay.classList.add('open');
+        icon.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+          document.getElementById('keywordInput').focus();
+        }, 200);
       }
 
-      function draw() {
-        ctx.clearRect(0, 0, w, h);
-        const time = Date.now() / 3000;
-        stars.forEach(s => {
-          const dx = Math.sin(time * s.speed + s.offset) * 0.8;
-          const dy = Math.cos(time * s.speed * 0.7 + s.offset) * 0.6;
-          ctx.beginPath();
-          ctx.arc(s.x + dx, s.y + dy, s.r, 0, Math.PI*2);
-          ctx.fillStyle = `rgba(255,255,255,${0.3 + 0.3 * Math.sin(time * s.speed + s.offset)})`;
-          ctx.fill();
-        });
-        requestAnimationFrame(draw);
+      function closeAddForm() {
+        const overlay = document.getElementById('addTaskOverlay');
+        const icon = document.getElementById('fabIcon');
+        overlay.classList.remove('open');
+        icon.classList.remove('open');
+        document.body.style.overflow = '';
+        document.getElementById('keywordInput').value = '';
+        document.getElementById('descInput').value = '';
       }
-      draw();
-    }
 
-    // ======================================================================
-    //  7. 事件绑定 & 初始化
-    // ======================================================================
-    // 浮动按钮
-    document.getElementById('fabAddTask').addEventListener('click', toggleAddForm);
-
-    // 取消按钮
-    document.getElementById('cancelAddBtn').addEventListener('click', closeAddForm);
-
-    // 添加按钮
-    document.getElementById('addTaskBtn').addEventListener('click', () => {
-      const kw = document.getElementById('keywordInput');
-      const desc = document.getElementById('descInput');
-      addTask(kw.value, desc.value);
-    });
-
-    // 键盘快捷操作
-    document.getElementById('keywordInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('addTaskBtn').click();
+      function toggleAddForm() {
+        const overlay = document.getElementById('addTaskOverlay');
+        if (overlay.classList.contains('open')) {
+          closeAddForm();
+        } else {
+          openAddForm();
+        }
       }
-      if (e.key === 'Escape') {
-        closeAddForm();
-      }
-    });
-    document.getElementById('descInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('addTaskBtn').click();
-      }
-      if (e.key === 'Escape') {
-        closeAddForm();
-      }
-    });
 
-    // 点击遮罩关闭
-    document.getElementById('addTaskOverlay').addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) {
-        closeAddForm();
+      // ======================================================================
+      //  6. 每日箴言
+      // ======================================================================
+      function setDailyQuote() {
+        const quoteEl = document.getElementById('dailyQuote');
+        const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+        const idx = dayOfYear % QUOTES.length;
+        quoteEl.innerHTML = `✦ ${QUOTES[idx]}`;
       }
-    });
 
-    // 重置 (隐藏双击)
-    document.getElementById('resetAllBtn').addEventListener('dblclick', () => {
-      if (confirm('重置所有任务数据？此操作不可撤销。')) {
-        tasks = [];
-        saveData();
-        renderAll();
+      // ======================================================================
+      //  7. 星空粒子 (Canvas)
+      // ======================================================================
+      function initStars() {
+        const canvas = document.getElementById('star-canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        function resize() {
+          w = canvas.width = window.innerWidth;
+          h = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const stars = [];
+        const count = 120;
+        for (let i=0; i<count; i++) {
+          stars.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: 0.6 + Math.random() * 1.2,
+            speed: 0.1 + Math.random() * 0.3,
+            offset: Math.random() * 1000,
+          });
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, w, h);
+          const time = Date.now() / 3000;
+          stars.forEach(s => {
+            const dx = Math.sin(time * s.speed + s.offset) * 0.8;
+            const dy = Math.cos(time * s.speed * 0.7 + s.offset) * 0.6;
+            ctx.beginPath();
+            ctx.arc(s.x + dx, s.y + dy, s.r, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(255,255,255,${0.3 + 0.3 * Math.sin(time * s.speed + s.offset)})`;
+            ctx.fill();
+          });
+          requestAnimationFrame(draw);
+        }
+        draw();
       }
-    });
 
-    // 启动
-    loadData();
-    setDailyQuote();
-    initStars();
+      // ======================================================================
+      //  8. 事件绑定 & 初始化
+      // ======================================================================
+      document.getElementById('fabAddTask').addEventListener('click', toggleAddForm);
+      document.getElementById('cancelAddBtn').addEventListener('click', closeAddForm);
+      document.getElementById('addTaskBtn').addEventListener('click', () => {
+        const kw = document.getElementById('keywordInput');
+        const desc = document.getElementById('descInput');
+        addTask(kw.value, desc.value);
+      });
 
-    console.log('✅ 每日使命已启动 — 点击右下角「+」添加任务');
+      document.getElementById('keywordInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('addTaskBtn').click();
+        }
+        if (e.key === 'Escape') closeAddForm();
+      });
+      document.getElementById('descInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('addTaskBtn').click();
+        }
+        if (e.key === 'Escape') closeAddForm();
+      });
+
+      document.getElementById('addTaskOverlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeAddForm();
+      });
+
+      // 重置 (隐藏双击)
+      document.getElementById('resetAllBtn').addEventListener('dblclick', () => {
+        if (confirm('重置所有任务数据？此操作不可撤销。')) {
+          tasks = [];
+          saveData();
+          // 同时清除重置日期，确保明天重置逻辑正常
+          localStorage.removeItem(RESET_KEY);
+          renderAll();
+          showResetToast('🗑️ 所有任务已清空');
+        }
+      });
+
+      // 启动
+      loadData();
+      setDailyQuote();
+      initStars();
+
+      console.log('✅ 每日使命已启动 — 每日自动重置状态 (基于日期)');
+    })();
   </script>
 </body>
 </html>
