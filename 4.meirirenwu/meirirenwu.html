@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+  <title>每日使命</title>
+  <style>
+    /* ===== CSS 变量 (主题) ===== */
+    :root {
+      --primary: #0f172a;
+      --accent-start: #f59e0b;
+      --accent-end: #ec4899;
+      --glass-bg: rgba(255, 255, 255, 0.06);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --card-radius: 24px;
+      --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ===== 全局重置 & 字体 ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--primary);
+      min-height: 100vh;
+      color: var(--text-primary);
+      padding: 20px;
+      padding-bottom: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+      overflow-x: hidden;
+      padding-top: 40px;
+    }
+
+    /* ===== 动态星空粒子背景 (Canvas) ===== */
+    #star-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ===== 主容器 ===== */
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      width: 100%;
+      backdrop-filter: blur(2px);
+    }
+
+    /* ===== 顶部：今日之锚 + 进度 ===== */
+    .header-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .quote-box {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 40px;
+      padding: 12px 24px;
+      box-shadow: var(--glass-shadow);
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .quote-text {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+      letter-spacing: 0.3px;
+      line-height: 1.5;
+    }
+
+    .quote-text i {
+      color: var(--accent-start);
+      margin-right: 6px;
+    }
+
+    .stats-box {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 60px;
+      padding: 8px 20px;
+      box-shadow: var(--glass-shadow);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .stats-box span {
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stats-box .stat-divider {
+      color: rgba(255,255,255,0.1);
+      -webkit-text-fill-color: rgba(255,255,255,0.1);
+    }
+
+    /* ===== 任务列表 ===== */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 28px 0 20px;
+    }
+
+    /* ===== 任务卡片 - 三种状态 ===== */
+    .task-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--card-radius);
+      padding: 16px 20px;
+      box-shadow: var(--glass-shadow);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all var(--transition-smooth);
+      animation: cardIn 0.4s ease;
+    }
+
+    @keyframes cardIn {
+      0% { opacity: 0; transform: translateY(16px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ---- 状态：已完成 ---- */
+    .task-card.status-done {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.08);
+      opacity: 0.7;
+    }
+
+    .task-card.status-done .task-keyword {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .task-card.status-done .task-status-badge {
+      background: #10b981;
+      color: white;
+    }
+
+    /* ---- 状态：已跳过 ---- */
+    .task-card.status-skip {
+      border-color: #6b7280;
+      background: rgba(107, 114, 128, 0.08);
+      opacity: 0.5;
+    }
+
+    .task-card.status-skip .task-keyword {
+      text-decoration: line-through;
+      opacity: 0.6;
+      background: none;
+      -webkit-text-fill-color: #6b7280;
+      color: #6b7280;
+    }
+
+    .task-card.status-skip .task-status-badge {
+      background: #6b7280;
+      color: white;
+    }
+
+    /* ---- 状态：待办 ---- */
+    .task-card.status-todo .task-status-badge {
+      background: var(--glass-border);
+      color: var(--text-secondary);
+    }
+
+    .task-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .task-keyword {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      line-height: 1.3;
+      background: linear-gradient(135deg, #f1f5f9 60%, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: all 0.3s;
+    }
+
+    .task-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      opacity: 0.8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .task-status-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 2px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 30px;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+
+    .btn-icon:hover {
+      background: rgba(255,255,255,0.06);
+      color: #f1f5f9;
+    }
+
+    .btn-icon.delete:hover {
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    .btn-icon.done-btn:hover {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .btn-icon.skip-btn:hover {
+      color: #9ca3af;
+      background: rgba(107, 114, 128, 0.1);
+    }
+
+    .btn-icon.undo-btn:hover {
+      color: var(--accent-start);
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    /* ===== 添加任务 - 浮动圆形按钮 ===== */
+    .fab-add-task {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 100;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+      color: #0f172a;
+      font-size: 2rem;
+      font-weight: 300;
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .fab-add-task:hover {
+      transform: scale(1.08);
+      box-shadow: 0 12px 40px rgba(245, 158, 11, 0.55);
+    }
+
+    .fab-add-task:active {
+      transform: scale(0.92);
+    }
+
+    .fab-add-task .icon {
+      transition: transform 0.4s ease;
+      display: inline-block;
+    }
+
+    .fab-add-task .icon.open {
+      transform: rotate(45deg);
+    }
+
+    /* ===== 添加表单 - 底部弹出 ===== */
+    .add-task-overlay {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 99;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
+      animation: overlayIn 0.3s ease;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .add-task-overlay.open {
+      display: flex;
+    }
+
+    @keyframes overlayIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .add-task-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--card-radius);
+      padding: 28px 24px 24px;
+      box-shadow: 0 -8px 48px rgba(0,0,0,0.6);
+      width: 100%;
+      max-width: 720px;
+      animation: slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 20px;
+    }
+
+    @keyframes slideUp {
+      0% { opacity: 0; transform: translateY(40px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .add-task-panel .panel-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      letter-spacing: 0.3px;
+    }
+
+    .add-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .add-input {
+      flex: 1;
+      min-width: 120px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 40px;
+      padding: 12px 18px;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      transition: all var(--transition-smooth);
+      outline: none;
+    }
+
+    .add-input:focus {
+      border-color: var(--accent-start);
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .add-input::placeholder {
+      color: rgba(255,255,255,0.3);
+    }
+
+    .add-actions-row {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .add-btn {
+      background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+      border: none;
+      border-radius: 40px;
+      padding: 12px 32px;
+      font-weight: 600;
+      color: #0f172a;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      font-size: 0.95rem;
+    }
+
+    .add-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 24px rgba(245, 158, 11, 0.35);
+    }
+
+    .add-close-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 40px;
+      padding: 12px 24px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .add-close-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-primary);
+    }
+
+    /* ===== 响应式 ===== */
+    @media (max-width: 600px) {
+      body { padding: 12px; padding-top: 24px; padding-bottom: 100px; }
+      .header-section { flex-direction: column; align-items: stretch; }
+      .stats-box { align-self: flex-start; }
+      .task-card { flex-wrap: wrap; }
+      .task-actions { margin-left: auto; }
+      
+      .fab-add-task {
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        font-size: 1.7rem;
+      }
+
+      .add-task-panel {
+        padding: 20px 16px;
+        margin-bottom: 12px;
+        border-radius: 20px;
+      }
+
+      .add-actions-row {
+        justify-content: stretch;
+      }
+
+      .add-actions-row .add-btn,
+      .add-actions-row .add-close-btn {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+      }
+
+      .add-row {
+        flex-direction: column;
+      }
+
+      .add-input {
+        width: 100%;
+      }
+    }
+
+    /* 隐藏重置按钮 */
+    .hidden-reset {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      z-index: 999;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.05);
+      font-size: 0.6rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 20px;
+      transition: 0.3s;
+    }
+    .hidden-reset:hover {
+      color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      opacity: 0.5;
+      font-size: 0.95rem;
+    }
+
+    .empty-state .emoji {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 星空粒子 Canvas -->
+  <canvas id="star-canvas"></canvas>
+
+  <!-- 隐藏重置按钮 -->
+  <button class="hidden-reset" id="resetAllBtn" title="重置所有数据 (双击)">⚙️ 重置数据</button>
+
+  <div class="app-container">
+    <!-- 顶部: 每日寄语 + 统计 -->
+    <div class="header-section">
+      <div class="quote-box">
+        <div class="quote-text" id="dailyQuote">✦ 加载今日箴言...</div>
+      </div>
+      <div class="stats-box">
+        <span id="totalCount">0</span> 项任务
+        <span class="stat-divider">|</span>
+        <span id="doneCount">0</span> ✅
+        <span class="stat-divider">|</span>
+        <span id="skipCount">0</span> ⏭️
+      </div>
+    </div>
+
+    <!-- 任务列表 -->
+    <div class="task-list" id="taskList"></div>
+  </div>
+
+  <!-- 浮动圆形添加按钮 -->
+  <button class="fab-add-task" id="fabAddTask">
+    <span class="icon" id="fabIcon">+</span>
+  </button>
+
+  <!-- 添加任务 - 底部弹出面板 -->
+  <div class="add-task-overlay" id="addTaskOverlay">
+    <div class="add-task-panel">
+      <div class="panel-title">📋 添加新任务</div>
+      <div class="add-row">
+        <input class="add-input" id="keywordInput" placeholder="任务关键词" maxlength="30" />
+        <input class="add-input" id="descInput" placeholder="简要描述 (可选)" maxlength="50" />
+      </div>
+      <div class="add-actions-row">
+        <button class="add-close-btn" id="cancelAddBtn">取消</button>
+        <button class="add-btn" id="addTaskBtn">+ 添加任务</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ======================================================================
+    //  1. 数据层 & localStorage
+    // ======================================================================
+    const STORAGE_KEY = 'daily_mission_data_v2';
+    let tasks = [];
+
+    // 内置励志名言库 (30+)
+    const QUOTES = [
+      "行动是治愈恐惧的良药。", "千里之行，始于足下。", "不要等待机会，而要创造机会。",
+      "生活就像骑自行车，要保持平衡就得往前走。", "只有极其努力，才能看起来毫不费力。",
+      "今日事，今日毕。", "伟大源于勇敢的开始。", "专注是成功的基石。",
+      "每一次坚持，都是向目标靠近。", "自律即自由。", "做最重要的事，而非最容易的事。",
+      "勇气不是没有恐惧，而是战胜恐惧。", "你的时间有限，不要浪费在别人的生活里。",
+      "先做最难的事，其余都会变得简单。", "成功是日复一日微小努力的积累。",
+      "不要问世界需要什么，问你自己擅长什么。", "改变从今天开始。",
+      "每天进步1%，一年强大37倍。", "信念是鸟，在黎明前歌唱。",
+      "做你害怕的事，害怕就会消失。", "专注当下，就是最好的修行。",
+      "使命不是口号，是每一步的行动。", "你比自己想象的更强大。",
+      "坚持最难，但回报也最大。", "未来属于那些相信梦想之美的人。",
+      "没有失败，只有反馈。", "行动胜于空谈。", "心之所向，素履以往。",
+      "生如逆旅，一苇以航。", "凡心所向，素履所往。", "生如夏花之绚烂。"
+    ];
+
+    // ======================================================================
+    //  2. 初始化 & 渲染
+    // ======================================================================
+    function loadData() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try { tasks = JSON.parse(stored); } catch(e){ tasks = []; }
+      } else {
+        // 默认示例任务
+        tasks = [
+          { id: Date.now()+1, keyword: '晨跑', desc: '5公里 有氧', status: 'todo' },
+          { id: Date.now()+2, keyword: '阅读', desc: '《吃掉那只青蛙》30页', status: 'todo' },
+          { id: Date.now()+3, keyword: '项目原型', desc: 'UI 设计初稿', status: 'todo' },
+        ];
+      }
+      renderAll();
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function renderAll() {
+      renderTasks();
+      updateStats();
+    }
+
+    function renderTasks() {
+      const container = document.getElementById('taskList');
+      container.innerHTML = '';
+
+      if (tasks.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="emoji">🚀</span>
+            还没有任务，点击右下角「+」开始添加吧！
+          </div>
+        `;
+        return;
+      }
+
+      tasks.forEach((task, index) => {
+        const card = document.createElement('div');
+        card.className = `task-card status-${task.status || 'todo'}`;
+        card.dataset.index = index;
+
+        // 状态标签
+        const badge = document.createElement('span');
+        badge.className = 'task-status-badge';
+        const statusMap = {
+          'todo': '待办',
+          'done': '✅ 已完成',
+          'skip': '⏭️ 跳过'
+        };
+        badge.textContent = statusMap[task.status] || '待办';
+
+        // 内容
+        const content = document.createElement('div');
+        content.className = 'task-content';
+        const kw = document.createElement('div');
+        kw.className = 'task-keyword';
+        kw.textContent = task.keyword || '未命名';
+        const desc = document.createElement('div');
+        desc.className = 'task-desc';
+        desc.textContent = task.desc || '';
+        content.appendChild(kw);
+        content.appendChild(desc);
+
+        // 操作按钮
+        const actions = document.createElement('div');
+        actions.className = 'task-actions';
+
+        if (task.status === 'todo') {
+          const doneBtn = document.createElement('button');
+          doneBtn.className = 'btn-icon done-btn';
+          doneBtn.textContent = '✅';
+          doneBtn.title = '标记为已完成';
+          doneBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setTaskStatus(index, 'done');
+          });
+
+          const skipBtn = document.createElement('button');
+          skipBtn.className = 'btn-icon skip-btn';
+          skipBtn.textContent = '⏭️';
+          skipBtn.title = '今天不做，跳过';
+          skipBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setTaskStatus(index, 'skip');
+          });
+
+          actions.appendChild(doneBtn);
+          actions.appendChild(skipBtn);
+        } else {
+          const undoBtn = document.createElement('button');
+          undoBtn.className = 'btn-icon undo-btn';
+          undoBtn.textContent = '↩️';
+          undoBtn.title = '撤销，回到待办';
+          undoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setTaskStatus(index, 'todo');
+          });
+          actions.appendChild(undoBtn);
+        }
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn-icon delete';
+        delBtn.textContent = '✕';
+        delBtn.title = '删除任务';
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteTask(index);
+        });
+        actions.appendChild(delBtn);
+
+        card.appendChild(badge);
+        card.appendChild(content);
+        card.appendChild(actions);
+        container.appendChild(card);
+      });
+    }
+
+    function updateStats() {
+      const total = tasks.length;
+      const done = tasks.filter(t => t.status === 'done').length;
+      const skip = tasks.filter(t => t.status === 'skip').length;
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('doneCount').textContent = done;
+      document.getElementById('skipCount').textContent = skip;
+    }
+
+    // ======================================================================
+    //  3. 任务操作
+    // ======================================================================
+    function addTask(keyword, desc) {
+      if (!keyword.trim()) {
+        alert('请填写任务关键词');
+        return false;
+      }
+      tasks.push({
+        id: Date.now(),
+        keyword: keyword.trim(),
+        desc: desc.trim() || '',
+        status: 'todo'
+      });
+      saveData();
+      renderAll();
+      closeAddForm();
+      return true;
+    }
+
+    function deleteTask(index) {
+      if (index < 0 || index >= tasks.length) return;
+      if (confirm(`确定要删除任务「${tasks[index].keyword}」吗？`)) {
+        tasks.splice(index, 1);
+        saveData();
+        renderAll();
+      }
+    }
+
+    function setTaskStatus(index, status) {
+      if (index < 0 || index >= tasks.length) return;
+      tasks[index].status = status;
+      saveData();
+      renderAll();
+    }
+
+    // ======================================================================
+    //  4. 添加表单控制 (底部弹出)
+    // ======================================================================
+    function openAddForm() {
+      const overlay = document.getElementById('addTaskOverlay');
+      const icon = document.getElementById('fabIcon');
+      overlay.classList.add('open');
+      icon.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        document.getElementById('keywordInput').focus();
+      }, 200);
+    }
+
+    function closeAddForm() {
+      const overlay = document.getElementById('addTaskOverlay');
+      const icon = document.getElementById('fabIcon');
+      overlay.classList.remove('open');
+      icon.classList.remove('open');
+      document.body.style.overflow = '';
+      document.getElementById('keywordInput').value = '';
+      document.getElementById('descInput').value = '';
+    }
+
+    function toggleAddForm() {
+      const overlay = document.getElementById('addTaskOverlay');
+      if (overlay.classList.contains('open')) {
+        closeAddForm();
+      } else {
+        openAddForm();
+      }
+    }
+
+    // ======================================================================
+    //  5. 每日箴言
+    // ======================================================================
+    function setDailyQuote() {
+      const quoteEl = document.getElementById('dailyQuote');
+      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      const idx = dayOfYear % QUOTES.length;
+      quoteEl.innerHTML = `✦ ${QUOTES[idx]}`;
+    }
+
+    // ======================================================================
+    //  6. 星空粒子 (Canvas)
+    // ======================================================================
+    function initStars() {
+      const canvas = document.getElementById('star-canvas');
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      const stars = [];
+      const count = 120;
+      for (let i=0; i<count; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 0.6 + Math.random() * 1.2,
+          speed: 0.1 + Math.random() * 0.3,
+          offset: Math.random() * 1000,
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const time = Date.now() / 3000;
+        stars.forEach(s => {
+          const dx = Math.sin(time * s.speed + s.offset) * 0.8;
+          const dy = Math.cos(time * s.speed * 0.7 + s.offset) * 0.6;
+          ctx.beginPath();
+          ctx.arc(s.x + dx, s.y + dy, s.r, 0, Math.PI*2);
+          ctx.fillStyle = `rgba(255,255,255,${0.3 + 0.3 * Math.sin(time * s.speed + s.offset)})`;
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // ======================================================================
+    //  7. 事件绑定 & 初始化
+    // ======================================================================
+    // 浮动按钮
+    document.getElementById('fabAddTask').addEventListener('click', toggleAddForm);
+
+    // 取消按钮
+    document.getElementById('cancelAddBtn').addEventListener('click', closeAddForm);
+
+    // 添加按钮
+    document.getElementById('addTaskBtn').addEventListener('click', () => {
+      const kw = document.getElementById('keywordInput');
+      const desc = document.getElementById('descInput');
+      addTask(kw.value, desc.value);
+    });
+
+    // 键盘快捷操作
+    document.getElementById('keywordInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('addTaskBtn').click();
+      }
+      if (e.key === 'Escape') {
+        closeAddForm();
+      }
+    });
+    document.getElementById('descInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('addTaskBtn').click();
+      }
+      if (e.key === 'Escape') {
+        closeAddForm();
+      }
+    });
+
+    // 点击遮罩关闭
+    document.getElementById('addTaskOverlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        closeAddForm();
+      }
+    });
+
+    // 重置 (隐藏双击)
+    document.getElementById('resetAllBtn').addEventListener('dblclick', () => {
+      if (confirm('重置所有任务数据？此操作不可撤销。')) {
+        tasks = [];
+        saveData();
+        renderAll();
+      }
+    });
+
+    // 启动
+    loadData();
+    setDailyQuote();
+    initStars();
+
+    console.log('✅ 每日使命已启动 — 点击右下角「+」添加任务');
+  </script>
+</body>
+</html>
