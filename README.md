@@ -50,7 +50,7 @@
           </a>
         </h3>
         <p>
-          <img src="https://img.shields.io/badge/状态-✨_可运行-brightgreen" alt="状态" />
+          <img src="https://img.shields.io/badge/状态-✅_可运行-brightgreen" alt="状态" />
           <img src="https://img.shields.io/badge/类型-视觉效果-9B59B6?style=flat-square" alt="类型" />
         </p>
         <p align="left">
@@ -82,7 +82,7 @@
           <b>📌 简介：</b>一个计算股价涨跌幅的网页，帮你快速分析投资回报。
         </p>
         <p align="left">
-          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/3.gujia/gujia">点击打开 →</a>
+          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/3.gujia/gujia.html">点击打开 →</a>
         </p>
       </td>
     </tr>
@@ -107,7 +107,7 @@
           <b>📌 简介：</b>一个记录每日任务的网页，帮你规划每日任务。
         </p>
         <p align="left">
-          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/3.gujia/gujia">点击打开 →</a>
+          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/4.meirirenwu/meirirenwu.html">点击打开 →</a>
         </p>
       </td>
     </tr>
