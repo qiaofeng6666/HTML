@@ -328,7 +328,6 @@
             <span class="badge-fallback"><i>📦</i> 项目总数 <span>4</span></span>
             <span class="badge-fallback"><i>📅</i> 最后更新 2026.07</span>
             <span class="badge-fallback"><i>🛠️</i> 技术栈 HTML+CSS+JS</span>
-            <br>
             <!-- 原徽章图片（兼容显示） -->
             <img src="https://img.shields.io/badge/📦_项目总数-4-4F8CF7?style=for-the-badge&logo=github" alt="项目总数" style="height:28px;" />
             <img src="https://img.shields.io/badge/📅_最后更新-2026.07-4FC7F7?style=for-the-badge" alt="最后更新" style="height:28px;" />
