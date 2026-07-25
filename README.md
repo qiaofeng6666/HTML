@@ -5,7 +5,7 @@
 
 <p align="center">
   <!-- 项目统计徽章（动态显示项目数量） -->
-  <img src="https://img.shields.io/badge/📦_项目总数-3-4F8CF7?style=for-the-badge&logo=github" alt="项目总数" />
+  <img src="https://img.shields.io/badge/📦_项目总数-4-4F8CF7?style=for-the-badge&logo=github" alt="项目总数" />
   <img src="https://img.shields.io/badge/📅_最后更新-2026.07-4FC7F7?style=for-the-badge" alt="最后更新" />
   <img src="https://img.shields.io/badge/🛠️_技术栈-HTML+CSS+JS-FFD700?style=for-the-badge&logo=javascript" alt="技术栈" />
 </p>
