@@ -70,7 +70,7 @@
     <tr>
       <td width="50%" valign="top">
         <h3>
-          <a href="https://qiaofeng6666.github.io//HTML/3.gujia/gujia">
+          <a href="https://qiaofeng6666.github.io//HTML/3.gujia/gujia.html">
             <img src="https://img.shields.io/badge/📈_股价计算器-涨跌幅分析-2ECC71?style=for-the-badge" alt="股价计算器" />
           </a>
         </h3>
@@ -89,6 +89,30 @@
   </table>
 </div>
 
+<!-- 项目卡片 4：每日任务 -->
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%" valign="top">
+        <h3>
+          <a href="https://qiaofeng6666.github.io//HTML/4.meirirenwu/meirirenwu.html">
+            <img src="https://img.shields.io/badge/📋_每日任务-记录完成情况-2ECC71?style=for-the-badge" alt="每日任务" />
+          </a>
+        </h3>
+        <p>
+          <img src="https://img.shields.io/badge/状态-✅_可运行-brightgreen" alt="状态" />
+          <img src="https://img.shields.io/badge/类型-实用工具-1ABC9C?style=flat-square" alt="类型" />
+        </p>
+        <p align="left">
+          <b>📌 简介：</b>一个记录每日任务的网页，帮你规划每日任务。
+        </p>
+        <p align="left">
+          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/3.gujia/gujia">点击打开 →</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</div>
 ---
 
 ## 📊 项目动态
