@@ -95,6 +95,8 @@
 ## 📊 项目动态
 
 <p align="center">
+  ![Stars](https://img.shields.io/github/stars/qiaofeng6666?style=social)
+  ![Followers](https://img.shields.io/github/followers/qiaofeng6666?style=social)
   <img src="https://stats.justsong.cn/api/github?username=qiaofeng6666&theme=default&show_icons=true&hide_title=true&hide_rank=true" alt="GitHub 统计" width="400" />
 </p>
 
