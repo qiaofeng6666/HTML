@@ -95,8 +95,10 @@
 ## 📊 项目动态
 
 <p align="center">
-  ![Stars](https://img.shields.io/github/stars/qiaofeng6666?style=social)
-  ![Followers](https://img.shields.io/github/followers/qiaofeng6666?style=social)
+  <!-- 徽章之间加了空格，并且每个占一行，更清晰 -->
+  <img src="https://img.shields.io/github/stars/qiaofeng6666?style=social" alt="Stars" />
+  <img src="https://img.shields.io/github/followers/qiaofeng6666?style=social" alt="Followers" />
+  <br /> <!-- 这个标签可以让统计卡片换行显示，效果更佳 -->
   <img src="https://stats.justsong.cn/api/github?username=qiaofeng6666&theme=default&show_icons=true&hide_title=true&hide_rank=true" alt="GitHub 统计" width="400" />
 </p>
 
