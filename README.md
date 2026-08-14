@@ -4,8 +4,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/📦_项目总数-4-4F8CF7?style=for-the-badge&logo=github" alt="项目总数" />
-  <img src="https://img.shields.io/badge/📅_最后更新-2026.07-4FC7F7?style=for-the-badge" alt="最后更新" />
+  <img src="https://img.shields.io/badge/📦_项目总数-5-4F8CF7?style=for-the-badge&logo=github" alt="项目总数" />
+  <img src="https://img.shields.io/badge/📅_最后更新-2026.08-4FC7F7?style=for-the-badge" alt="最后更新" />
   <img src="https://img.shields.io/badge/🛠️_技术栈-HTML+CSS+JS-FFD700?style=for-the-badge&logo=javascript" alt="技术栈" />
 </p>
 
@@ -86,6 +86,8 @@
           <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/4.meirirenwu/meirirenwu.html">点击打开 →</a>
         </p>
       </td>
+    </tr>
+    <tr>
       <td align="center" width="50%">
         <h3>
           <a href="https://qiaofeng6666.github.io//HTML/5.pinjie/zifupinjie.html">
