@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本插入工具 · 可变字符插入</title>
+    <style>
+        /* ---------- 全局样式 ---------- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, system-ui, sans-serif;
+            background: linear-gradient(145deg, #f4f9fe 0%, #e6eef7 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .card {
+            max-width: 820px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 40px;
+            padding: 40px 44px 46px;
+            box-shadow: 0 20px 50px rgba(0, 20, 30, 0.10), 0 8px 24px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: box-shadow 0.25s;
+        }
+
+        .card:hover {
+            box-shadow: 0 28px 60px rgba(0, 20, 30, 0.14);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0b2a3b;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        h1 small {
+            font-size: 15px;
+            font-weight: 400;
+            color: #4c6a7a;
+            letter-spacing: 0;
+            margin-left: 4px;
+        }
+
+        .subhead {
+            color: #4d6a7a;
+            font-size: 15px;
+            font-weight: 400;
+            margin-bottom: 30px;
+            border-left: 3px solid #7ba9c9;
+            padding-left: 16px;
+            background: rgba(123, 169, 201, 0.06);
+            border-radius: 0 8px 8px 0;
+            line-height: 1.5;
+        }
+
+        /* ---------- 表单区域 ---------- */
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: #1f4a61;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group label .hint {
+            font-weight: 400;
+            color: #6f8fa3;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+
+        .form-group textarea,
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 18px;
+            border: 1.5px solid #d3e2ed;
+            background: #ffffffdd;
+            backdrop-filter: blur(4px);
+            font-size: 16px;
+            font-family: inherit;
+            color: #0b2a3b;
+            transition: border 0.2s, box-shadow 0.2s;
+            outline: none;
+            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .form-group textarea:focus,
+        .form-group input[type="text"]:focus {
+            border-color: #3d8bb9;
+            box-shadow: 0 0 0 4px rgba(61, 139, 185, 0.12), inset 0 1px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 70px;
+            line-height: 1.6;
+        }
+
+        .form-group .input-with-btn {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .form-group .input-with-btn input {
+            flex: 1 1 180px;
+        }
+
+        /* ---------- 位置控制 ---------- */
+        .position-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 16px;
+            background: #f2f8fd;
+            border-radius: 20px;
+            padding: 14px 20px;
+            border: 1px solid #e2eef9;
+        }
+
+        .position-controls .pos-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1 1 140px;
+        }
+
+        .position-controls .pos-input label {
+            font-weight: 500;
+            font-size: 14px;
+            color: #1f4a61;
+            white-space: nowrap;
+        }
+
+        .position-controls .pos-input input[type="number"] {
+            width: 76px;
+            padding: 8px 6px;
+            border-radius: 14px;
+            border: 1.5px solid #d3e2ed;
+            background: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+            color: #0b2a3b;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .position-controls .pos-input input[type="number"]:focus {
+            border-color: #3d8bb9;
+            box-shadow: 0 0 0 3px rgba(61, 139, 185, 0.12);
+        }
+
+        .position-controls .pos-input input[type="number"]::-webkit-inner-spin-button {
+            opacity: 0.5;
+        }
+
+        .position-controls .pos-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-pos {
+            padding: 7px 16px;
+            border-radius: 40px;
+            border: 1.5px solid #cfe0ed;
+            background: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1d445b;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, transform 0.1s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .btn-pos:hover {
+            background: #eaf2f8;
+            border-color: #aac3d6;
+        }
+
+        .btn-pos:active {
+            transform: scale(0.95);
+        }
+
+        .btn-pos.active {
+            background: #1f5e7e;
+            border-color: #1f5e7e;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(31, 94, 126, 0.20);
+        }
+
+        .btn-pos.active:hover {
+            background: #164b66;
+            border-color: #164b66;
+        }
+
+        .position-indicator {
+            font-size: 13px;
+            color: #4f7b91;
+            background: #e7f0f7;
+            padding: 4px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        /* ---------- 插入内容 ---------- */
+        .insert-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 16px;
+            background: #f2f8fd;
+            border-radius: 20px;
+            padding: 14px 20px;
+            border: 1px solid #e2eef9;
+        }
+
+        .insert-group .insert-label {
+            font-weight: 500;
+            font-size: 14px;
+            color: #1f4a61;
+            white-space: nowrap;
+        }
+
+        .insert-group input {
+            flex: 1 1 160px;
+            padding: 10px 16px;
+            border-radius: 14px;
+            border: 1.5px solid #d3e2ed;
+            background: #ffffff;
+            font-size: 16px;
+            font-family: inherit;
+            color: #0b2a3b;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .insert-group input:focus {
+            border-color: #3d8bb9;
+            box-shadow: 0 0 0 4px rgba(61, 139, 185, 0.10);
+        }
+
+        .insert-group .insert-preview {
+            font-size: 14px;
+            color: #4f7b91;
+            background: #e7f0f7;
+            padding: 4px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+
+        /* ---------- 结果预览 ---------- */
+        .result-area {
+            background: #ffffffdd;
+            backdrop-filter: blur(4px);
+            border-radius: 28px;
+            padding: 20px 24px 22px;
+            border: 1px solid #dbe8f2;
+            margin: 24px 0 22px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .result-header .result-label {
+            font-weight: 600;
+            color: #1f4a61;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .result-header .result-label .length-info {
+            font-weight: 400;
+            font-size: 13px;
+            color: #4f7b91;
+            background: #e7f0f7;
+            padding: 2px 16px;
+            border-radius: 30px;
+        }
+
+        .result-box {
+            background: #f7fbfe;
+            border-radius: 20px;
+            padding: 18px 22px;
+            border: 1.5px solid #e2eef9;
+            font-size: 18px;
+            font-weight: 450;
+            color: #0b2a3b;
+            word-break: break-all;
+            line-height: 1.8;
+            min-height: 74px;
+            transition: background 0.2s;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            position: relative;
+        }
+
+        .result-box .highlight-insert {
+            background: #fcee8f;
+            padding: 2px 6px;
+            border-radius: 8px;
+            color: #1a3b4a;
+            font-weight: 600;
+            box-shadow: 0 1px 6px rgba(252, 238, 143, 0.3);
+            border: 1px solid #f5d742;
+            margin: 0 -2px;
+        }
+
+        .result-box .placeholder {
+            color: #aac0cf;
+            font-weight: 400;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-size: 15px;
+        }
+
+        /* ---------- 操作栏 ---------- */
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 26px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.18s, transform 0.1s, box-shadow 0.18s;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+            background: #e4eef5;
+            color: #1d445b;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .btn:hover {
+            background: #d5e3ed;
+            transform: scale(0.97);
+        }
+
+        .btn:active {
+            transform: scale(0.94);
+        }
+
+        .btn-primary {
+            background: #1f5e7e;
+            color: #fff;
+            box-shadow: 0 6px 16px rgba(31, 94, 126, 0.22);
+        }
+
+        .btn-primary:hover {
+            background: #164b66;
+            box-shadow: 0 8px 22px rgba(31, 94, 126, 0.28);
+        }
+
+        .btn-success {
+            background: #1d7a5e;
+            color: #fff;
+            box-shadow: 0 6px 16px rgba(29, 122, 94, 0.22);
+        }
+
+        .btn-success:hover {
+            background: #15634b;
+            box-shadow: 0 8px 22px rgba(29, 122, 94, 0.28);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #c3d7e5;
+            color: #1d445b;
+        }
+
+        .btn-outline:hover {
+            background: #eaf2f8;
+            border-color: #8eb3cc;
+        }
+
+        .btn-sm {
+            padding: 8px 18px;
+            font-size: 13px;
+            border-radius: 40px;
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        /* ---------- Toast ---------- */
+        .toast-tip {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.96);
+            background: #0b2a3b;
+            color: #eaf3fa;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.20);
+            z-index: 999;
+        }
+
+        .toast-tip.show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* ---------- 响应式 ---------- */
+        @media (max-width: 640px) {
+            .card {
+                padding: 28px 18px 32px;
+                border-radius: 28px;
+            }
+
+            h1 {
+                font-size: 22px;
+                flex-wrap: wrap;
+            }
+
+            .position-controls,
+            .insert-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .position-controls .pos-input {
+                flex: 1 1 auto;
+            }
+
+            .position-controls .pos-btns {
+                justify-content: center;
+            }
+
+            .position-indicator {
+                margin-left: 0;
+                text-align: center;
+            }
+
+            .insert-group .insert-preview {
+                text-align: center;
+            }
+
+            .result-box {
+                font-size: 16px;
+                padding: 14px 16px;
+            }
+
+            .action-bar .btn {
+                flex: 1 1 auto;
+            }
+
+            .action-bar .spacer {
+                display: none;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .card {
+                padding: 20px 12px 24px;
+            }
+
+            .result-box {
+                font-size: 14px;
+                padding: 12px 14px;
+            }
+
+            .btn {
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+
+            .btn-pos {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card" role="main">
+        <h1>
+            ✏️ 文本插入工具
+            <small>· 可变字符插入</small>
+        </h1>
+        <div class="subhead">
+            基础文本固定不变，在指定位置插入可变的字符或字符串，实时预览效果
+        </div>
+
+        <!-- 基础文本 -->
+        <div class="form-group">
+            <label for="baseText">📄 基础文本 <span class="hint">（固定不变的内容）</span></label>
+            <textarea id="baseText" rows="2" placeholder="输入一段固定文本，例如：Hello World">Hello World</textarea>
+        </div>
+
+        <!-- 插入位置 -->
+        <div class="form-group">
+            <label>📍 插入位置</label>
+            <div class="position-controls">
+                <div class="pos-input">
+                    <label for="positionInput">位置</label>
+                    <input type="number" id="positionInput" min="0" max="100" value="5">
+                    <span style="font-size:14px; color:#4f7b91;">/ <span id="maxPosDisplay">11</span></span>
+                </div>
+                <div class="pos-btns">
+                    <button class="btn-pos" data-pos="start">⏮ 开头</button>
+                    <button class="btn-pos active" data-pos="middle">⏺ 中间</button>
+                    <button class="btn-pos" data-pos="end">⏭ 结尾</button>
+                </div>
+                <span class="position-indicator" id="positionIndicator">插入点: 5</span>
+            </div>
+        </div>
+
+        <!-- 插入内容 -->
+        <div class="form-group">
+            <label>🔤 插入内容 <span class="hint">（可变化的字符或字符串）</span></label>
+            <div class="insert-group">
+                <span class="insert-label">插入</span>
+                <input type="text" id="insertText" value="✨" placeholder="输入要插入的内容">
+                <span class="insert-preview" id="insertPreview">当前: ✨</span>
+            </div>
+        </div>
+
+        <!-- 结果预览 -->
+        <div class="result-area">
+            <div class="result-header">
+                <span class="result-label">
+                    📋 插入结果
+                    <span class="length-info" id="lengthDisplay">长度 11</span>
+                </span>
+                <span style="font-size:13px; color:#4f7b91; background:#e7f0f7; padding:2px 14px; border-radius:30px;">
+                    🟡 高亮 = 插入内容
+                </span>
+            </div>
+            <div class="result-box" id="resultBox">
+                <span class="placeholder">等待预览…</span>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-bar">
+            <button class="btn btn-success" id="copyBtn">📄 复制结果</button>
+            <button class="btn btn-outline" id="resetBtn">↺ 重置示例</button>
+            <span class="spacer"></span>
+            <button class="btn btn-outline btn-sm" id="clearInsertBtn">清除插入内容</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-tip" id="toast"></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- DOM ----------
+            const baseText = document.getElementById('baseText');
+            const positionInput = document.getElementById('positionInput');
+            const maxPosDisplay = document.getElementById('maxPosDisplay');
+            const insertText = document.getElementById('insertText');
+            const resultBox = document.getElementById('resultBox');
+            const lengthDisplay = document.getElementById('lengthDisplay');
+            const positionIndicator = document.getElementById('positionIndicator');
+            const insertPreview = document.getElementById('insertPreview');
+            const copyBtn = document.getElementById('copyBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const clearInsertBtn = document.getElementById('clearInsertBtn');
+            const posBtns = document.querySelectorAll('.btn-pos');
+            const toast = document.getElementById('toast');
+
+            // ---------- 状态 ----------
+            // 无额外状态，所有数据来自 DOM
+
+            // ---------- 辅助 ----------
+            function showToast(msg, duration = 2000) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, duration);
+            }
+
+            // 获取当前文本、位置、插入内容
+            function getData() {
+                const text = baseText.value || '';
+                let pos = parseInt(positionInput.value, 10);
+                const maxPos = text.length;
+                if (isNaN(pos) || pos < 0) pos = 0;
+                if (pos > maxPos) pos = maxPos;
+                const insert = insertText.value;
+                return { text, pos, insert, maxPos };
+            }
+
+            // 更新位置输入框的范围和显示
+            function updatePositionRange() {
+                const text = baseText.value || '';
+                const maxPos = text.length;
+                maxPosDisplay.textContent = maxPos;
+                // 确保 pos 在有效范围内
+                let pos = parseInt(positionInput.value, 10);
+                if (isNaN(pos)) pos = 0;
+                if (pos < 0) pos = 0;
+                if (pos > maxPos) pos = maxPos;
+                positionInput.value = pos;
+                positionInput.max = maxPos;
+                positionIndicator.textContent = `插入点: ${pos}`;
+                return pos;
+            }
+
+            // 核心：渲染结果
+            function render() {
+                const data = getData();
+                const { text, pos, insert, maxPos } = data;
+
+                // 确保位置有效
+                const clampedPos = Math.min(Math.max(pos, 0), maxPos);
+                if (clampedPos !== pos) {
+                    positionInput.value = clampedPos;
+                }
+
+                // 更新位置指示
+                positionIndicator.textContent = `插入点: ${clampedPos}`;
+                maxPosDisplay.textContent = maxPos;
+
+                // 更新插入预览
+                const displayInsert = insert || '（空）';
+                insertPreview.textContent = `当前: ${displayInsert}`;
+
+                // 构建结果
+                if (text === '') {
+                    resultBox.innerHTML = `<span class="placeholder">请输入基础文本</span>`;
+                    lengthDisplay.textContent = '长度 0';
+                    return;
+                }
+
+                const before = text.slice(0, clampedPos);
+                const after = text.slice(clampedPos);
+                const fullResult = before + insert + after;
+
+                // 高亮插入部分（转义 HTML）
+                const escapedBefore = escapeHtml(before);
+                const escapedInsert = escapeHtml(insert);
+                const escapedAfter = escapeHtml(after);
+
+                let html = '';
+                if (escapedBefore) html += escapedBefore;
+                if (escapedInsert) {
+                    html += `<span class="highlight-insert">${escapedInsert}</span>`;
+                }
+                if (escapedAfter) html += escapedAfter;
+
+                if (!html) {
+                    html = `<span class="placeholder">（空结果）</span>`;
+                }
+
+                resultBox.innerHTML = html;
+                lengthDisplay.textContent = `长度 ${fullResult.length}`;
+            }
+
+            // 简单转义
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/\n/g, '&#10;');
+            }
+
+            // ---------- 事件 ----------
+            // 基础文本变化
+            baseText.addEventListener('input', function() {
+                updatePositionRange();
+                render();
+            });
+
+            // 位置输入变化
+            positionInput.addEventListener('input', function() {
+                const maxPos = baseText.value.length;
+                let val = parseInt(this.value, 10);
+                if (isNaN(val)) val = 0;
+                if (val < 0) val = 0;
+                if (val > maxPos) val = maxPos;
+                this.value = val;
+                // 取消快捷按钮的高亮
+                posBtns.forEach(btn => btn.classList.remove('active'));
+                render();
+            });
+
+            // 插入内容变化
+            insertText.addEventListener('input', render);
+
+            // 快捷位置按钮
+            posBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const text = baseText.value || '';
+                    const maxPos = text.length;
+                    let pos = 0;
+                    const type = this.dataset.pos;
+                    if (type === 'start') {
+                        pos = 0;
+                    } else if (type === 'end') {
+                        pos = maxPos;
+                    } else { // middle
+                        pos = Math.floor(maxPos / 2);
+                    }
+                    positionInput.value = pos;
+                    posBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    render();
+                });
+            });
+
+            // 复制
+            copyBtn.addEventListener('click', function() {
+                const data = getData();
+                const { text, pos, insert } = data;
+                if (!text && !insert) {
+                    showToast('⚠️ 没有内容可复制', 1500);
+                    return;
+                }
+                const result = text.slice(0, pos) + insert + text.slice(pos);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(result).then(() => {
+                        showToast('📄 已复制到剪贴板！', 1500);
+                    }).catch(() => {
+                        fallbackCopy(result);
+                    });
+                } else {
+                    fallbackCopy(result);
+                }
+            });
+
+            function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                ta.style.top = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('📄 已复制到剪贴板！', 1500);
+                } catch (e) {
+                    showToast('❌ 复制失败，请手动复制', 1800);
+                }
+                document.body.removeChild(ta);
+            }
+
+            // 重置
+            resetBtn.addEventListener('click', function() {
+                baseText.value = 'Hello World';
+                insertText.value = '✨';
+                positionInput.value = 5;
+                posBtns.forEach(b => b.classList.remove('active'));
+                document.querySelector('.btn-pos[data-pos="middle"]').classList.add('active');
+                updatePositionRange();
+                render();
+                showToast('↺ 已重置示例', 1200);
+            });
+
+            // 清除插入内容
+            clearInsertBtn.addEventListener('click', function() {
+                insertText.value = '';
+                render();
+                showToast('🧹 已清空插入内容', 1000);
+                insertText.focus();
+            });
+
+            // ---------- 初始化 ----------
+            function init() {
+                // 设置初始位置为中间
+                const text = baseText.value || '';
+                const mid = Math.floor(text.length / 2);
+                positionInput.value = mid;
+                positionInput.max = text.length;
+                maxPosDisplay.textContent = text.length;
+                // 激活中间按钮
+                posBtns.forEach(b => b.classList.remove('active'));
+                document.querySelector('.btn-pos[data-pos="middle"]').classList.add('active');
+                render();
+            }
+
+            // 监听回车键在插入内容输入框中触发生成（无需额外操作，已实时）
+            // 额外：在插入内容输入框中按回车，聚焦到复制按钮？ 不需要，保持简单。
+
+            // 当基础文本变化时，更新位置范围
+            // 已通过 input 事件处理
+
+            init();
+
+            // 额外优化：当插入内容为空时，显示占位
+            // 已经通过 render 处理
+
+            // 在窗口加载完成后，聚焦到基础文本
+            window.addEventListener('load', function() {
+                // 不自动聚焦，避免移动端键盘弹出
+            });
+
+            // 快捷操作：点击结果区域复制
+            resultBox.addEventListener('dblclick', function() {
+                copyBtn.click();
+            });
+
+            // 如果用户点击位置数字，全选
+            positionInput.addEventListener('focus', function() {
+                this.select();
+            });
+
+            console.log('✨ 文本插入工具已启动！');
+            console.log('💡 提示：双击结果区域可快速复制');
+
+        })();
+    </script>
+
+</body>
+</html>
