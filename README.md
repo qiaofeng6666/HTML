@@ -86,6 +86,17 @@
           <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/4.meirirenwu/meirirenwu.html">点击打开 →</a>
         </p>
       </td>
+      <td align="center" width="50%">
+        <h3>
+          <a href="https://qiaofeng6666.github.io//HTML/5.pinjie/zifupinjie.html">
+            🧩 字符拼接
+          </a>
+        </h3>
+        <p>
+          <img src="https://img.shields.io/badge/状态-✅_可运行-brightgreen" alt="状态" />
+          <img src="https://img.shields.io/badge/类型-实用工具-1ABC9C?style=flat-square" alt="类型" />
+        </p>
+      </td>
     </tr>
   </table>
 </div>
