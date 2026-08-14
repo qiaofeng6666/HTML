@@ -11,7 +11,7 @@
 
 ---
 
-## 🧩 项目列表
+## 📂 项目列表
 
 <div align="center">
   <table>
@@ -19,7 +19,7 @@
       <td align="center" width="50%">
         <h3>
           <a href="https://qiaofeng6666.github.io//HTML/1.shuzhi/shuzhi.html">
-            🧩 数织计算器
+            🔢 数织计算器
           </a>
         </h3>
         <p>
@@ -72,7 +72,7 @@
       <td align="center" width="50%">
         <h3>
           <a href="https://qiaofeng6666.github.io//HTML/4.meirirenwu/meirirenwu.html">
-            📋 每日任务
+            📝 每日任务
           </a>
         </h3>
         <p>
