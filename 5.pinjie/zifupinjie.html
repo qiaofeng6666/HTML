@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>文本插入工具 · 可变字符插入</title>
     <style>
         /* ---------- 全局样式 ---------- */
@@ -249,8 +249,16 @@
             white-space: nowrap;
         }
 
-        .insert-group input {
+        .insert-group .insert-input-wrapper {
             flex: 1 1 160px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+        }
+
+        .insert-group .insert-input-wrapper input {
+            flex: 1 1 120px;
             padding: 10px 16px;
             border-radius: 14px;
             border: 1.5px solid #d3e2ed;
@@ -260,11 +268,50 @@
             color: #0b2a3b;
             outline: none;
             transition: border 0.2s, box-shadow 0.2s;
+            min-width: 60px;
         }
 
-        .insert-group input:focus {
+        .insert-group .insert-input-wrapper input:focus {
             border-color: #3d8bb9;
             box-shadow: 0 0 0 4px rgba(61, 139, 185, 0.10);
+        }
+
+        .btn-paste {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 14px;
+            border-radius: 40px;
+            border: 1.5px solid #cfe0ed;
+            background: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1d445b;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, transform 0.1s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-paste:hover {
+            background: #eaf2f8;
+            border-color: #aac3d6;
+        }
+
+        .btn-paste:active {
+            transform: scale(0.95);
+        }
+
+        .btn-paste svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .insert-group .insert-preview {
@@ -274,6 +321,7 @@
             padding: 4px 16px;
             border-radius: 40px;
             font-weight: 500;
+            white-space: nowrap;
         }
 
         /* ---------- 结果预览 ---------- */
@@ -483,6 +531,16 @@
                 text-align: center;
             }
 
+            .insert-group .insert-input-wrapper {
+                flex: 1 1 auto;
+                flex-wrap: wrap;
+            }
+
+            .insert-group .insert-input-wrapper input {
+                flex: 1 1 100px;
+                min-width: 60px;
+            }
+
             .insert-group .insert-preview {
                 text-align: center;
             }
@@ -520,6 +578,11 @@
                 padding: 6px 12px;
                 font-size: 12px;
             }
+
+            .btn-paste {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -546,7 +609,7 @@
             <div class="position-controls">
                 <div class="pos-input">
                     <label for="positionInput">位置</label>
-                    <input type="number" id="positionInput" min="0" max="100" value="5">
+                    <input type="number" id="positionInput" min="0" max="100" value="5" />
                     <span style="font-size:14px; color:#4f7b91;">/ <span id="maxPosDisplay">11</span></span>
                 </div>
                 <div class="pos-btns">
@@ -563,7 +626,16 @@
             <label>🔤 插入内容 <span class="hint">（可变化的字符或字符串）</span></label>
             <div class="insert-group">
                 <span class="insert-label">插入</span>
-                <input type="text" id="insertText" value="✨" placeholder="输入要插入的内容">
+                <div class="insert-input-wrapper">
+                    <input type="text" id="insertText" value="✨" placeholder="输入要插入的内容" />
+                    <button class="btn-paste" id="pasteBtn" title="粘贴剪贴板内容">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                        粘贴
+                    </button>
+                </div>
                 <span class="insert-preview" id="insertPreview">当前: ✨</span>
             </div>
         </div>
@@ -612,11 +684,9 @@
             const copyBtn = document.getElementById('copyBtn');
             const resetBtn = document.getElementById('resetBtn');
             const clearInsertBtn = document.getElementById('clearInsertBtn');
+            const pasteBtn = document.getElementById('pasteBtn');
             const posBtns = document.querySelectorAll('.btn-pos');
             const toast = document.getElementById('toast');
-
-            // ---------- 状态 ----------
-            // 无额外状态，所有数据来自 DOM
 
             // ---------- 辅助 ----------
             function showToast(msg, duration = 2000) {
@@ -628,7 +698,6 @@
                 }, duration);
             }
 
-            // 获取当前文本、位置、插入内容
             function getData() {
                 const text = baseText.value || '';
                 let pos = parseInt(positionInput.value, 10);
@@ -639,12 +708,10 @@
                 return { text, pos, insert, maxPos };
             }
 
-            // 更新位置输入框的范围和显示
             function updatePositionRange() {
                 const text = baseText.value || '';
                 const maxPos = text.length;
                 maxPosDisplay.textContent = maxPos;
-                // 确保 pos 在有效范围内
                 let pos = parseInt(positionInput.value, 10);
                 if (isNaN(pos)) pos = 0;
                 if (pos < 0) pos = 0;
@@ -655,26 +722,32 @@
                 return pos;
             }
 
-            // 核心：渲染结果
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/\n/g, '&#10;');
+            }
+
+            // ---------- 核心渲染 ----------
             function render() {
                 const data = getData();
                 const { text, pos, insert, maxPos } = data;
 
-                // 确保位置有效
                 const clampedPos = Math.min(Math.max(pos, 0), maxPos);
                 if (clampedPos !== pos) {
                     positionInput.value = clampedPos;
                 }
 
-                // 更新位置指示
                 positionIndicator.textContent = `插入点: ${clampedPos}`;
                 maxPosDisplay.textContent = maxPos;
 
-                // 更新插入预览
                 const displayInsert = insert || '（空）';
                 insertPreview.textContent = `当前: ${displayInsert}`;
 
-                // 构建结果
                 if (text === '') {
                     resultBox.innerHTML = `<span class="placeholder">请输入基础文本</span>`;
                     lengthDisplay.textContent = '长度 0';
@@ -685,7 +758,6 @@
                 const after = text.slice(clampedPos);
                 const fullResult = before + insert + after;
 
-                // 高亮插入部分（转义 HTML）
                 const escapedBefore = escapeHtml(before);
                 const escapedInsert = escapeHtml(insert);
                 const escapedAfter = escapeHtml(after);
@@ -705,25 +777,59 @@
                 lengthDisplay.textContent = `长度 ${fullResult.length}`;
             }
 
-            // 简单转义
-            function escapeHtml(str) {
-                if (!str) return '';
-                return String(str)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/\n/g, '&#10;');
+            // ---------- 粘贴功能 ----------
+            async function pasteFromClipboard() {
+                try {
+                    // 检查是否支持 Clipboard API
+                    if (!navigator.clipboard || !navigator.clipboard.readText) {
+                        // 降级方案：使用传统的 paste 事件触发
+                        fallbackPaste();
+                        return;
+                    }
+
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        insertText.value = text;
+                        render();
+                        showToast('📋 已粘贴剪贴板内容', 1200);
+                    } else {
+                        showToast('⚠️ 剪贴板为空', 1200);
+                    }
+                } catch (err) {
+                    console.warn('Clipboard read failed:', err);
+                    // 降级方案
+                    fallbackPaste();
+                }
             }
 
-            // ---------- 事件 ----------
-            // 基础文本变化
+            // 降级粘贴方案：模拟 Ctrl+V 或提示用户
+            function fallbackPaste() {
+                // 尝试使用 execCommand 的 paste（部分浏览器支持）
+                try {
+                    // 先聚焦到输入框
+                    insertText.focus();
+                    // 尝试执行粘贴命令（需用户授权，可能被浏览器拦截）
+                    const success = document.execCommand('paste');
+                    if (success) {
+                        render();
+                        showToast('📋 已粘贴剪贴板内容', 1200);
+                        return;
+                    }
+                } catch (_) { /* ignore */ }
+
+                // 如果 execCommand 失败，提示用户手动粘贴
+                showToast('⌨️ 请使用 Ctrl+V (或 Cmd+V) 手动粘贴', 2000);
+                insertText.focus();
+                // 选中输入框内容方便替换
+                insertText.select();
+            }
+
+            // ---------- 事件绑定 ----------
             baseText.addEventListener('input', function() {
                 updatePositionRange();
                 render();
             });
 
-            // 位置输入变化
             positionInput.addEventListener('input', function() {
                 const maxPos = baseText.value.length;
                 let val = parseInt(this.value, 10);
@@ -731,15 +837,12 @@
                 if (val < 0) val = 0;
                 if (val > maxPos) val = maxPos;
                 this.value = val;
-                // 取消快捷按钮的高亮
                 posBtns.forEach(btn => btn.classList.remove('active'));
                 render();
             });
 
-            // 插入内容变化
             insertText.addEventListener('input', render);
 
-            // 快捷位置按钮
             posBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const text = baseText.value || '';
@@ -750,7 +853,7 @@
                         pos = 0;
                     } else if (type === 'end') {
                         pos = maxPos;
-                    } else { // middle
+                    } else {
                         pos = Math.floor(maxPos / 2);
                     }
                     positionInput.value = pos;
@@ -759,6 +862,9 @@
                     render();
                 });
             });
+
+            // 粘贴按钮
+            pasteBtn.addEventListener('click', pasteFromClipboard);
 
             // 复制
             copyBtn.addEventListener('click', function() {
@@ -817,48 +923,31 @@
                 insertText.focus();
             });
 
+            // 双击结果复制
+            resultBox.addEventListener('dblclick', function() {
+                copyBtn.click();
+            });
+
+            // 位置输入框聚焦全选
+            positionInput.addEventListener('focus', function() {
+                this.select();
+            });
+
             // ---------- 初始化 ----------
             function init() {
-                // 设置初始位置为中间
                 const text = baseText.value || '';
                 const mid = Math.floor(text.length / 2);
                 positionInput.value = mid;
                 positionInput.max = text.length;
                 maxPosDisplay.textContent = text.length;
-                // 激活中间按钮
                 posBtns.forEach(b => b.classList.remove('active'));
                 document.querySelector('.btn-pos[data-pos="middle"]').classList.add('active');
                 render();
             }
 
-            // 监听回车键在插入内容输入框中触发生成（无需额外操作，已实时）
-            // 额外：在插入内容输入框中按回车，聚焦到复制按钮？ 不需要，保持简单。
-
-            // 当基础文本变化时，更新位置范围
-            // 已通过 input 事件处理
-
             init();
-
-            // 额外优化：当插入内容为空时，显示占位
-            // 已经通过 render 处理
-
-            // 在窗口加载完成后，聚焦到基础文本
-            window.addEventListener('load', function() {
-                // 不自动聚焦，避免移动端键盘弹出
-            });
-
-            // 快捷操作：点击结果区域复制
-            resultBox.addEventListener('dblclick', function() {
-                copyBtn.click();
-            });
-
-            // 如果用户点击位置数字，全选
-            positionInput.addEventListener('focus', function() {
-                this.select();
-            });
-
             console.log('✨ 文本插入工具已启动！');
-            console.log('💡 提示：双击结果区域可快速复制');
+            console.log('💡 提示：双击结果区域可快速复制 · 点击"粘贴"按钮可直接填入剪贴板内容');
 
         })();
     </script>
