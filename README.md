@@ -105,6 +105,23 @@
           <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/5.pinjie/zifupinjie.html">点击打开 →</a>
         </p>
       </td>
+      <td align="center" width="50%">
+        <h3>
+          <a href="https://qiaofeng6666.github.io//HTML/5.pinjie/zifupinjie.html">
+            🧹 IP排列
+          </a>
+        </h3>
+        <p>
+          <img src="https://img.shields.io/badge/状态-✅_可运行-brightgreen" alt="状态" />
+          <img src="https://img.shields.io/badge/类型-实用工具-1ABC9C?style=flat-square" alt="类型" />
+        </p>
+        <p align="left">
+          <b>📌 简介：</b>一个排列去重ip的网页，帮你排序去重。
+        </p>
+        <p align="left">
+          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/6.ip/ip.html">点击打开 →</a>
+        </p>
+      </td>
     </tr>
   </table>
 </div>
