@@ -123,42 +123,6 @@
         </p>
       </td>
     </tr>
-    <tr>
-      <td align="center" width="50%">
-        <h3>
-          <a href="https://qiaofeng6666.github.io//HTML/5.pinjie/zifupinjie.html">
-            🔍 IP筛选
-          </a>
-        </h3>
-        <p>
-          <img src="https://img.shields.io/badge/状态-✅_可运行-brightgreen" alt="状态" />
-          <img src="https://img.shields.io/badge/类型-实用工具-1ABC9C?style=flat-square" alt="类型" />
-        </p>
-        <p align="left">
-          <b>📌 简介：</b>一个检测ip是否使用cloudflare的网页。
-        </p>
-        <p align="left">
-          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/7.cloudflareIP/cloudflareIP.html">点击打开 →</a>
-        </p>
-      </td>
-      <td align="center" width="50%">
-        <h3>
-          <a href="https://qiaofeng6666.github.io//HTML/5.pinjie/zifupinjie.html">
-            🧹 XXXX
-          </a>
-        </h3>
-        <p>
-          <img src="https://img.shields.io/badge/状态-✅_可运行-brightgreen" alt="状态" />
-          <img src="https://img.shields.io/badge/类型-实用工具-1ABC9C?style=flat-square" alt="类型" />
-        </p>
-        <p align="left">
-          <b>📌 简介：</b>XXXX。
-        </p>
-        <p align="left">
-          <b>🔗 预览：</b><a href="https://qiaofeng6666.github.io//HTML/XXXX/XXXX.html">点击打开 →</a>
-        </p>
-      </td>
-    </tr>
   </table>
 </div>
 
